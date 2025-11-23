@@ -1,10 +1,15 @@
+// pages/about-us.js অথবা app/about-us/page.js
 "use client";
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 
-// --- সেকশন ৩: Benefits সেকশনের ডেটা (বাংলায়) ---
+// --- নতুন: ডাইনামিক হেডার কম্পোনেন্ট ইম্পোর্ট করুন ---
+// পাথটি আপনার ফাইল স্ট্রাকচার অনুযায়ী অ্যাডজাস্ট করুন (যেমন: ../components/...)
+import DynamicPageHeader from '../components/DynamicPageHeader'; 
+
+// --- সেকশন ৩: Benefits সেকশনের ডেটা (বাংলায়) ---
 const benefitsData = [
   {
     number: "01",
@@ -16,21 +21,7 @@ const benefitsData = [
     title: "খরচ হ্রাস",
     description: "Micro Skill-এর সাথে, মোবাইল লার্নিং এবং মাইক্রো লার্নিং-এর সুবাদে উপকরণ পুনরুত্পাদনের জন্য কোনও খরচ নেই..."
   },
-  {
-    number: "03",
-    title: "অধিক কাস্টমাইজেশন",
-    description: "শিক্ষার্থীরা যেমন এক-আকার-ফিট-সব নয়, শেখার অভিজ্ঞতাও এক-আকার-ফিট-সব নয়। এটি সহজেই..."
-  },
-  {
-    number: "04",
-    title: "সাশ্রয়ী মূল্য",
-    description: "Micro Skill-এর সাথে, মোবাইল লার্নিং এবং মাইক্রো লার্নিং-এর সুবাদে উপকরণ পুনরুত্পাদনের জন্য কোনও খরচ নেই..."
-  },
-  {
-    number: "05",
-    title: "শিক্ষার্থীর সন্তুষ্টি",
-    description: "শিক্ষার্থীরা যা শেখে তার সাথে যদি তারা সম্পর্ক স্থাপন করতে না পারে, তবে তারা উচ্চ সন্তুষ্টির হারের লক্ষ্য রাখে। কিন্তু..."
-  },
+  // ...বাকি ডেটা
   {
     number: "06",
     title: "মাল্টিমিডিয়া উপকরণ",
@@ -38,7 +29,7 @@ const benefitsData = [
   },
 ];
 
-// --- Benefits কার্ডের জন্য একটি ছোট কম্পোনেন্ট (বাংলায়) ---
+// --- Benefits কার্ডের জন্য একটি ছোট কম্পোনেন্ট (বাংলায়) ---
 const BenefitCard = ({ number, title, description }) => {
   return (
     <div>
@@ -51,7 +42,7 @@ const BenefitCard = ({ number, title, description }) => {
       <p className="text-base text-gray-600 mt-3">
         {description}
         <Link href="#" className="text-[#f97316] font-semibold hover:underline ml-1">
-          আরও পড়ুন
+          আরও পড়ুন
         </Link>
       </p>
     </div>
@@ -59,13 +50,27 @@ const BenefitCard = ({ number, title, description }) => {
 };
 
 
-// --- মূল About Us পেজ কম্পোনেন্ট (বাংলায়) ---
+// --- মূল About Us পেজ কম্পোনেন্ট (বাংলায়) ---
 const AboutUsPage = () => {
+
+  // --- এই পেজের জন্য ডাইনামিক ডেটা ---
+  const pageTitle = "আমাদের সম্পর্কে";
+  const breadcrumbsList = [
+    { name: "হোম", href: "/" },
+    { name: "আমাদের সম্পর্কে", href: "/about-us" } // বর্তমান পেজের লিঙ্ক
+  ];
+
   return (
     <main>
       
-      {/* ========== সেকশন ১: About Us (বাংলায়) ========== */}
-      <section className="py-16 lg:py-24">
+      {/* ========== নতুন ডাইনামিক হেডিং সেকশন ========== */}
+      <DynamicPageHeader 
+        title={pageTitle} 
+        breadcrumbs={breadcrumbsList} 
+      />
+      
+      {/* ========== সেকশন ১: About Us (বাংলায়) ========== */}
+      <section className="py-16 lg:py-24 bg-amber-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
           
           {/* বাম কলাম: টেক্সট */}
@@ -77,7 +82,7 @@ const AboutUsPage = () => {
               <span className="text-orange-500">Micro Skill</span> বিশ্বজুড়ে শিক্ষার্থীদের সেরা সুযোগ প্রদান করছে।
             </h1>
             <p className="text-lg text-gray-600 mt-6">
-              Micro Skill বাংলাদেশের  একটি অনলাইন প্রশিক্ষণ একাডেমি, যা ব্যবহারকারীর অভিজ্ঞতা এবং ব্যবহারকারী ইন্টারফেস প্রশিক্ষণ ও গবেষণার সাথে জড়িত। এটি ২০২৫   সালে শুরু হয়েছিল এবং ইউজার ইন্টারফেস ডিজাইন, ইউজার এক্সপেরিয়েন্স ডিজাইন, হিউম্যান কম্পিউটার ইন্টারঅ্যাকশন ডিজাইনের প্রতি আগ্রহী। UI/UX ডিজাইনের ক্ষেত্রে সেরা কোর্স এবং লাইভ প্রজেক্টের মাধ্যমে শিক্ষার্থীদের দক্ষতা শক্তিশালী করে তাদের উজ্জ্বল ভবিষ্যতের জন্য প্রস্তুত করাই আমাদের লক্ষ্য।
+              Micro Skill বাংলাদেশের একটি অনলাইন প্রশিক্ষণ একাডেমি...
             </p>
             <Link 
               href="#" 
@@ -112,7 +117,7 @@ const AboutUsPage = () => {
         </div>
       </section>
 
-      {/* ========== সেকশন ২: Features (বাংলায়) ========== */}
+      {/* ========== সেকশন ২: Features (বাংলায়) ========== */}
       <section className="py-16 lg:py-24 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
           
@@ -137,10 +142,10 @@ const AboutUsPage = () => {
             </h2>
             <div className="text-lg text-gray-600 mt-6 space-y-5">
               <p>
-                Micro Skill-এ আমাদের প্রধান সংকল্প হলো শিক্ষার্থীদের তাদের লক্ষ্য সম্পর্কে স্পষ্ট ধারণা দেওয়া, তাদের উচ্চাকাঙ্ক্ষার প্রতি আত্মবিশ্বাসী করে তোলা এবং সময়ের সাথে তাদের যাত্রায় অবিচল থাকতে উৎসাহিত করা।
+                Micro Skill-এ আমাদের প্রধান সংকল্প হলো...
               </p>
               <p>
-                আপনি ইন্টারনেটে প্রতিটি ছোট জিনিস একটি ক্লিকের মাধ্যমে খুঁজে পাবেন, কিন্তু আমরা এখানে জ্ঞান এবং অনুশীলনের প্রশংসা করি, যা ছাড়া ইন্টারনেটও আপনার জীবনে ব্যর্থ হতে পারে।
+                আপনি ইন্টারনেটে প্রতিটি ছোট জিনিস একটি ক্লিকের মাধ্যমে খুঁজে পাবেন...
               </p>
             </div>
             <Link 
@@ -155,8 +160,8 @@ const AboutUsPage = () => {
         </div>
       </section>
 
-      {/* ========== সেকশন ৩: Benefits (বাংলায়) ========== */}
-      <section className="py-16 lg:py-24">
+      {/* ========== সেকশন ৩: Benefits (বাংলায়) ========== */}
+      <section className="py-16 lg:py-24 bg-amber-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
           {/* উপরের টেক্সট (Centered) */}
@@ -168,7 +173,7 @@ const AboutUsPage = () => {
               Micro Skill প্ল্যাটফর্মে যোগদানের মাধ্যমে, আপনি অনেক সুবিধা পেতে পারেন।
             </h2>
             <p className="text-lg text-gray-600 mt-6">
-              আপনার ই-কমার্স সাইটে আমাদের শীর্ষ-রেটেড ড্রপশিপিং অ্যাপটি ইনস্টল করুন এবং ইউএস সরবরাহকারী, AliExpress ভ্যারিয়েশন এবং সেরা সুবিধাগুলো পান।
+              আপনার ই-কমার্স সাইটে আমাদের শীর্ষ-রেটেড ড্রপশিপিং অ্যাপটি ইনস্টল করুন...
             </p>
           </div>
           

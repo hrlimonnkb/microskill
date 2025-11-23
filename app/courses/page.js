@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { BookOpen, User, DollarSign, Clock, Users, ArrowRight, ChevronDown } from 'lucide-react';
 import Skeleton, { SkeletonTheme } from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
+import DynamicPageHeader from '@/components/DynamicPageHeader';
 
 const API_BASE_URL = 'https://api.microskill.com.bd';
 
@@ -55,10 +56,21 @@ export default function AllCoursesPage() {
 
         fetchCourses();
     }, []);
+      const pageTitle = "আমাদের কোর্স সমূহ";
+  const breadcrumbsList = [
+    { name: "হোম", href: "/" },
+    { name: "আমাদের কোর্স সমূহ", href: "/courses" } // বর্তমান পেজের লিঙ্ক
+  ];
 
     if (error) return <div className="p-4 text-center text-red-600 bg-red-50 rounded-lg">Error: {error}</div>;
 
     return (
+        <main>
+              <DynamicPageHeader 
+        title={pageTitle} 
+        breadcrumbs={breadcrumbsList} 
+      />
+     
         <SkeletonTheme baseColor="#e2e8f0" highlightColor="#f8fafc">
             <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
                 <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-8">
@@ -174,5 +186,6 @@ export default function AllCoursesPage() {
                 </div>
             </div>
         </SkeletonTheme>
+           </main>
     );
 }

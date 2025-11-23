@@ -199,7 +199,7 @@ const PopularClassSection = () => {
         {/* "Explore All" Button */}
         <div className="text-center mt-12">
           <Link 
-            href="/all-programs" 
+            href="/courses" 
             className="inline-block px-7 py-3 border border-gray-300 rounded-lg text-base font-semibold text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all"
           >
             সব কোর্স দেখুন

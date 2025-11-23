@@ -75,8 +75,8 @@ const Footer = () => {
           <div>
             <h3 className="text-sm font-semibold text-white mb-4">আইনগত</h3>
             <ul className="space-y-3 text-sm">
-              <li><Link href="#" className="hover:text-white">শর্তাবলী</Link></li>
-              <li><Link href="#" className="hover:text-white">গোপনীয়তা</Link></li>
+              <li><Link href="terms-conditions" className="hover:text-white">শর্তাবলী</Link></li>
+              <li><Link href="privacy-policy" className="hover:text-white">গোপনীয়তা</Link></li>
               <li><Link href="#" className="hover:text-white">কুকিজ</Link></li>
               <li><Link href="#" className="hover:text-white">যোগাযোগ</Link></li>
             </ul>
@@ -86,7 +86,7 @@ const Footer = () => {
         {/* নিচের অংশ: কপিরাইট ও আইকন */}
         <div className="pt-8 border-t border-slate-700 flex flex-col sm:flex-row justify-between items-center">
           <p className="text-sm text-center sm:text-left">
-            © ২০২৫ এড-সার্কেল। সর্বস্বত্ব সংরক্ষিত।
+            © ২০২৫ মাইক্রো স্কীল। সর্বস্বত্ব সংরক্ষিত।
           </p>
           <div className="flex space-x-4 mt-4 sm:mt-0">
             <Link href="#" className="hover:text-white"><Twitter size={20} /></Link>

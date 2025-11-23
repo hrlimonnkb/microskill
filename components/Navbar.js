@@ -20,8 +20,8 @@ const Navbar = () => {
     // 2. Updated Nav Links to match the image
   const navLinks = [
   { href: "/", text: "হোম" },
-  { href: "/about", text: "আমাদের সম্পর্কে" },
   { href: "/courses", text: "কোর্সসমূহ" },
+  { href: "/become-a-teacher", text: "শেখাতে চাই" },
   { href: "/contact", text: "যোগাযোগ" },
   { href: "/faq", text: "প্রশ্নোত্তর" },
 ];

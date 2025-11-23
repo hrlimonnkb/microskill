@@ -1,161 +1,159 @@
 "use client";
 
-import React from 'react';
-import Image from 'next/image';
+import { Star } from 'lucide-react';
 
-// Swiper-এর কম্পোনেন্ট এবং মডিউল Import করুন
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { Autoplay } from 'swiper/modules'; 
+export default function TestimonialSection() {
+  const reviews = [
+    {
+      initial: 'C',
+      name: 'Cédric',
+      title: 'Agency Owner',
+      rating: 5,
+      text: 'Finally found a tool that actually works. My clients are getting 10x more engagement since I started using Faceless Clip for their content.',
+      bgColor: 'bg-teal-500', // পরিবর্তিত
+    },
+    {
+      initial: 'A',
+      name: 'Ange',
+      title: 'Content Creator',
+      rating: 5,
+      text: 'I went from spending 8 hours editing one video to creating 20 videos in the same time. This is revolutionary for content creators!',
+      bgColor: 'bg-indigo-500', // পরিবর্তিত
+    },
+    {
+      initial: 'K',
+      name: 'Karim',
+      title: 'Street Interviewer',
+      rating: 5,
+      text: 'Perfect for my street interviews. The AI automatically creates engaging short clips from my long-form content. My TikTok is exploding!',
+      bgColor: 'bg-purple-500', // পরিবর্তিত
+    },
+    {
+      initial: 'C',
+      name: 'Coraline',
+      title: 'eCommerce Brand Owner',
+      rating: 5,
+      text: 'Our product videos get 5x more views now. The AI creates perfect product showcases without showing my face. Sales have doubled!',
+      bgColor: 'bg-pink-500', // পরিবর্তিত
+    },
+    {
+      initial: 'S',
+      name: 'Sacha',
+      title: 'Video Editing Agency Owner',
+      rating: 5,
+      text: 'I was worried this would replace my business, but it actually helps me serve more clients faster. Quality is incredible!',
+      bgColor: 'bg-orange-500', // পরিবর্তিত
+    },
+  ];
 
-// Swiper-এর CSS Import করুন
-import 'swiper/css';
+  // রিভিউগুলো ডুপ্লিকেট করা হয়েছে
+  const scrollingReviews = [...reviews, ...reviews, ...reviews, ...reviews];
 
-// --- ডেমো ডেটা (অপরিবর্তিত) ---
-const testimonialsData = [
-  {
-    id: 1,
-    logoSrc: "/logo.png",
-    quote: "এই কোর্সটি অসাধারণ! যারা নতুন ক্যারিয়ার শুরু করতে চান বা পুরনো জ্ঞান ঝালিয়ে নিতে চান তাদের জন্য এটি একটি দারুণ প্ল্যাটফর্ম।",
-    avatarSrc: "/assets/Image(4).png",
-    name: "জ্যাকব জোন্স",
-    title: "শিক্ষার্থী, ন্যাশনাল ইউনিভার্সিটি",
-  },
-  {
-    id: 2,
-    logoSrc: "/logo.png",
-    quote: "Micro Skill আমার ক্যারিয়ার পরিবর্তন করেছে। প্রশিক্ষকরা অসাধারণ এবং কনটেন্টটি অত্যন্ত প্রাসঙ্গিক।",
-    avatarSrc: "/assets/Image(5).png",
-    name: "জেন স্মিথ",
-    title: "প্রোডাক্ট ডিজাইনার, টেক কর্প",
-  },
-  {
-    id: 3,
-    logoSrc: "/logo.png",
-    quote: "একটি সত্যিকারের আকর্ষণীয় শেখার পরিবেশ। যারা ডিজাইনে সিরিয়াস, তাদের জন্য Micro Skill অত্যন্ত সুপারিশযোগ্য।",
-    avatarSrc: "/assets/Image(6).png",
-    name: "এমিলি হোয়াইট",
-    title: "UX রিসার্চার, গ্লোবাল ইনোভেশন্স",
-  },
-  {
-    id: 4,
-    logoSrc: "/logo.png",
-    quote: "প্রশিক্ষকরা অসাধারণ এবং কনটেন্টটি অত্যন্ত প্রাসঙ্গিক।",
-    avatarSrc: "/assets/Image(4).png",
-    name: "আরিফ হোসেন",
-    title: "ফ্রিল্যান্স ডিজাইনার",
-  },
-   {
-    id: 5,
-    logoSrc: "/logo.png",
-    quote: "এই কোর্সটি অসাধারণ! যারা নতুন ক্যারিয়ার শুরু করতে চান বা পুরনো জ্ঞান ঝালিয়ে নিতে চান তাদের জন্য এটি একটি দারুণ প্ল্যাটফর্ম।",
-    avatarSrc: "/assets/Image(4).png",
-    name: "জ্যাকব জোন্স",
-    title: "শিক্ষার্থী, ন্যাশনাল ইউনিভার্সিটি",
-  },
-  {
-    id: 6,
-    logoSrc: "/logo.png",
-    quote: "Micro Skill আমার ক্যারিয়ার পরিবর্তন করেছে। প্রশিক্ষকরা অসাধারণ এবং কনটেন্টটি অত্যন্ত প্রাসঙ্গিক।",
-    avatarSrc: "/assets/Image(5).png",
-    name: "জেন স্মিথ",
-    title: "প্রোডাক্ট ডিজাইনার, টেক কর্প",
-  },
-  {
-    id: 7,
-    logoSrc: "/logo.png",
-    quote: "একটি সত্যিকারের আকর্ষণীয় শেখার পরিবেশ। যারা ডিজাইনে সিরিয়াস, তাদের জন্য Micro Skill অত্যন্ত সুপারিশযোগ্য।",
-    avatarSrc: "/assets/Image(6).png",
-    name: "এমিলি হোয়াইট",
-    title: "UX রিসার্চার, গ্লোবাল ইনোভেশন্স",
-  },
-  {
-    id: 8,
-    logoSrc: "/logo.png",
-    quote: "প্রশিক্ষকরা অসাধারণ এবং কনটেন্টটি অত্যন্ত প্রাসঙ্গিক।",
-    avatarSrc: "/assets/Image(4).png",
-    name: "আরিফ হোসেন",
-    title: "ফ্রিল্যান্স ডিজাইনার",
-  },
-];
+  const renderStars = (rating) => {
+    return Array.from({ length: 5 }, (_, i) => (
+      <Star 
+        key={i} 
+        // --- পরিবর্তন: স্টার কালার ---
+        className={`w-4 h-4 text-[#f97316] ${i < rating ? 'fill-current' : ''} mr-1`} 
+      />
+    ));
+  };
 
-/**
- * The Main Testimonial Section Component
- */
-const TestimonialSection = () => {
+  // অ্যানিমেশন স্টাইল (অপরিবর্তিত)
+  const animationStyle = `
+    @keyframes scroll {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(calc(-21.5rem * 5)); } /* (width + gap) * number of original reviews */
+    }
+    @keyframes scroll-reverse {
+      0% { transform: translateX(calc(-21.5rem * 5)); }
+      100% { transform: translateX(0); }
+    }
+    .animate-scroll {
+      animation: scroll 40s linear infinite;
+    }
+    .animate-scroll-reverse {
+      animation: scroll-reverse 40s linear infinite;
+    }
+  `;
+
   return (
-    <section className="py-16 md:py-24 bg-gradient-to-br from-orange-100 to-orange-200 overflow-hidden">
-      
-      {/* --- কাস্টম CSS --- */}
-      <style jsx global>{`
-        .testimonial-swiper .swiper-wrapper {
-          transition-timing-function: linear !important;
-        }
-      `}</style>
-      {/* --- কাস্টম CSS শেষ --- */}
+    <>
+      <style>{animationStyle}</style>
+      {/* --- পরিবর্তন: সেকশন ব্যাকগ্রাউন্ড --- */}
+      <section id="reviews" className="py-20 bg-gradient-to-br from-orange-100 to-orange-200 text-black overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-gray-900">Trusted by creators worldwide</h2>
+            {/* --- পরিবর্তন: সাব-হেডলাইন টেক্সট কালার --- */}
+            <p className="text-xl text-gray-700 max-w-3xl mx-auto leading-relaxed">
+              Hear what Learner love about Micro Skills and how it has transformed their learning experience.
+            </p>
+          </div>
 
-      <div> 
-        
-        {/* Swiper Slider (আপডেটেড) */}
-        <Swiper
-          modules={[Autoplay]} 
-          className="testimonial-swiper" 
-          loop={true}
-          spaceBetween={30}
-          slidesPerView={'auto'} 
-          speed={8000} // <-- স্পিড ঠিক রাখুন
-          autoplay={{
-            delay: 0, // <-- 0ms delay
-            disableOnInteraction: false,
-            // --- পরিবর্তন ---
-            // pauseOnMouseEnter: true, <-- এই লাইনটি মুছে ফেলা হয়েছে
-            // --- পরিবর্তন শেষ ---
-          }}
-        >
-          {testimonialsData.map((testimonial) => (
-            <SwiperSlide 
-              key={testimonial.id} 
-              className="!w-[380px] h-auto p-4" 
-            >
-              <div className="bg-white rounded-3xl p-8 text-center shadow-lg h-full flex flex-col">
-                
-                {/* Logo */}
-                <Image
-                  src={testimonial.logoSrc}
-                  alt="Micro Skill Logo"
-                  width={100}
-                  height={30}
-                  className="mx-auto h-8 w-auto mb-8"
-                />
+          <div className="relative space-y-6">
+            {/* Row 1: হাইলাইটেড কার্ড (কমলা গ্র্যাডিয়েন্ট) */}
+            <div className="flex gap-6 animate-scroll">
+              {scrollingReviews.map((review, index) => (
+                <div 
+                  key={`r1-${index}`} 
+                  // --- পরিবর্তন: কার্ড স্টাইল ---
+                  className="flex-shrink-0 w-80 bg-white border border-gray-200 rounded-2xl p-6 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-orange-400/30"
+                >
+                  <div className="flex items-start mb-4">
+                    <div className={`flex-shrink-0 w-12 h-12 ${review.bgColor} rounded-full flex items-center justify-center mr-3`}>
+                      {/* --- পরিবর্তন: টেক্সট কালAR --- */}
+                      <span className="text-lg font-bold text-white">{review.initial}</span>
+                    </div>
+                    <div>
+                      {/* --- পরিবর্তন: টেক্সট কালার --- */}
+                      <h4 className="font-bold text-gray-900">{review.name}</h4>
+                      <p className="text-gray-500 text-sm">{review.title}</p>
+                    </div>
+                  </div>
+                  <div className="flex mb-3">
+                    {renderStars(review.rating)}
+                  </div>
+                  {/* --- পরিবর্তন: টেক্সট কালার --- */}
+                  <p className="text-gray-600 text-sm leading-relaxed">
+                    {review.text}
+                  </p>
+                </div>
+              ))}
+            </div>
 
-                {/* Quote */}
-                <h2 className="text-2xl font-bold text-gray-900 leading-tight mt-4 flex-grow">
-                  "{testimonial.quote}"
-                </h2>
-
-                {/* Avatar */}
-                <Image
-                  src={testimonial.avatarSrc}
-                  alt={testimonial.name}
-                  width={64}
-                  height={64}
-                  className="w-16 h-16 rounded-full object-cover mx-auto mt-10 shadow-md"
-                />
-
-                {/* Name and Title */}
-                <p className="text-xl font-bold text-gray-900 mt-4">
-                  {testimonial.name}
-                </p>
-                <p className="text-base text-gray-600 mt-1">
-                  {testimonial.title}
-                </p>
-              </div>
-            </SwiperSlide>
-          ))}
-        </Swiper>
-        
-      </div>
-    </section>
+            {/* Row 2: স্ট্যান্ডার্ড কার্ড (সাদা) */}
+            <div className="flex gap-6 animate-scroll-reverse">
+              {scrollingReviews.map((review, index) => (
+                <div 
+                  key={`r2-${index}`} 
+                  // --- পরিবর্তন: কার্ড স্টাইল ---
+                  className="flex-shrink-0 w-80 bg-white border border-gray-200 rounded-2xl p-6 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-orange-400/30"
+                >
+                  <div className="flex items-start mb-4">
+                    <div className={`flex-shrink-0 w-12 h-12 ${review.bgColor} rounded-full flex items-center justify-center mr-3`}>
+                      {/* --- পরিবর্তন: টেক্সট কালAR --- */}
+                      <span className="text-lg font-bold text-white">{review.initial}</span>
+                    </div>
+                    <div>
+                      {/* --- পরিবর্তন: টেক্সট কালার --- */}
+                      <h4 className="font-bold text-gray-900">{review.name}</h4>
+                      <p className="text-gray-500 text-sm">{review.title}</p>
+                    </div>
+                  </div>
+                  <div className="flex mb-3">
+                    {renderStars(review.rating)}
+                  </div>
+                  {/* --- পরিবর্তন: টেক্সট কালার --- */}
+                  <p className="text-gray-600 text-sm leading-relaxed">
+                    {review.text}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+    </>
   );
-};
-
-export default TestimonialSection;
+}
