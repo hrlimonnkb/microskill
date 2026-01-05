@@ -46,7 +46,7 @@ const Footer = () => {
           <div>
             <h3 className="text-sm font-semibold text-white mb-4">কোম্পানি</h3>
             <ul className="space-y-3 text-sm">
-              <li><Link href="#" className="hover:text-white">আমাদের সম্পর্কে</Link></li>
+              <li><Link href="/about" className="hover:text-white">আমাদের সম্পর্কে</Link></li>
               <li><Link href="#" className="hover:text-white">ক্যারিয়ার</Link></li>
               <li>
                 <Link href="#" className="flex items-center gap-2 hover:text-white">

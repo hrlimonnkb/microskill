@@ -10,7 +10,7 @@ const Topbar = ({ setIsSidebarOpen }) => {
     const { user, loading, logout } = useAuth();
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const dropdownRef = useRef(null);
-    const IMG_URL="https://api.microskill.com.bd"
+    const IMG_URL="http://localhost:3001"
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {

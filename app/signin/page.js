@@ -2,10 +2,11 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { signIn } from 'next-auth/react';
+// import { signIn } from 'next-auth/react'; <--- এটি বাদ দেওয়া হয়েছে
+import { useGoogleLogin } from '@react-oauth/google'; // <--- নতুন ইম্পোর্ট
 import Head from 'next/head';
 import { CheckCircle, BookOpenText, Sparkles, Mail, Lock, Eye, EyeOff, Loader2 } from 'lucide-react';
-import { useAuth } from '@/context/AuthContext'; // আমাদের তৈরি করা AuthContext হুক ইম্পোর্ট করুন
+import { useAuth } from '@/context/AuthContext'; 
 
 // Google Icon Component
 const GoogleIcon = () => (
@@ -20,7 +21,7 @@ const GoogleIcon = () => (
 
 const SigninPage = () => {
     const router = useRouter();
-    const { login } = useAuth(); // AuthContext থেকে login ফাংশনটি নিন
+    const { login } = useAuth();
 
     const [formData, setFormData] = useState({ email: '', password: '' });
     const [showPassword, setShowPassword] = useState(false);
@@ -31,56 +32,88 @@ const SigninPage = () => {
         const { name, value } = e.target;
         setFormData({ ...formData, [name]: value });
     };
-    
-    const handleGoogleSignIn = async () => {
-        // next-auth এর মাধ্যমে গুগল সাইন-ইন
-        await signIn('google', { callbackUrl: '/dashboard' });
-    };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-    
-    if (!formData.email || !formData.password) {
-        setError('অনুগ্রহ করে ইমেইল এবং পাসওয়ার্ড দিন।');
-        return;
-    }
+    // ==========================================
+    // 1. Google Login Handler (Hook)
+    // ==========================================
+    const handleGoogleLogin = useGoogleLogin({
+        onSuccess: async (tokenResponse) => {
+            setLoading(true);
+            setError('');
+            
+            try {
+                // আপনার ব্যাকএন্ডে টোকেন পাঠানো হচ্ছে
+                const response = await fetch('http://localhost:3001/api/auth/google-login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        token: tokenResponse.access_token // ব্যাকএন্ডে access_token পাঠানো
+                    }),
+                });
 
-    setLoading(true);
+                const data = await response.json();
 
-    try {
-        // দ্রষ্টব্য: আপনার API URL টি /api/auth/signin, নিশ্চিত করুন এটি সঠিক
-        const response = await fetch('https://api.microskill.com.bd/api/auth/signin', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(formData),
-        });
+                if (!response.ok) {
+                    throw new Error(data.message || 'Google login failed.');
+                }
 
-        const data = await response.json();
+                // সফল হলে লগইন ফাংশন কল করা
+                login(data);
+                // router.push('/dashboard'); // AuthContext যদি রিডাইরেক্ট না করে, তবে এখানে আনকমেন্ট করুন
 
-        if (!response.ok) {
-            throw new Error(data.message || 'Something went wrong during signin.');
+            } catch (err) {
+                console.error(err);
+                setError(err.message || 'Google Sign-in failed. Please try again.');
+            } finally {
+                setLoading(false);
+            }
+        },
+        onError: (error) => {
+            console.error('Google Login Error:', error);
+            setError('Google sign-in popup closed or failed.');
+        }
+    });
+
+    // ==========================================
+    // 2. Normal Email/Password Login
+    // ==========================================
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setError('');
+        
+        if (!formData.email || !formData.password) {
+            setError('অনুগ্রহ করে ইমেইল এবং পাসওয়ার্ড দিন।');
+            return;
         }
 
-        // ==================================================
-        //                 মূল পরিবর্তন এখানে
-        // ==================================================
-        
-        // আগে ছিল: login(data.user);
-        // এখন হবে:
-        login(data); // <-- সম্পূর্ণ data অবজেক্টটি পাস করুন
+        setLoading(true);
 
-        // ==================================================
+        try {
+            const response = await fetch('http://localhost:3001/api/auth/signin', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData),
+            });
 
-    } catch (err) {
-        setError(err.message);
-    } finally {
-        setLoading(false);
-    }
-};
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || 'Something went wrong during signin.');
+            }
+
+            login(data);
+
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
         <>
+            {/* Next.js App Router এ Head ট্যাগ কাজ নাও করতে পারে যদি আপনি layout এ metadata ব্যবহার করেন */}
+            {/* তবুও আপনার দেওয়া কোড অনুযায়ী রেখে দিচ্ছি */}
             <Head>
                 <title>সাইন ইন - ই-লার্ণ</title>
                 <meta name="description" content="আপনার অ্যাকাউন্টে লগইন করুন" />
@@ -124,10 +157,17 @@ const SigninPage = () => {
                         <h2 style={{ color: '#111827' }} className="text-3xl font-bold mb-2">স্বাগতম! লগইন করুন</h2>
                         <p style={{ color: '#6B7280' }} className="mb-6">আপনার প্রোফাইলে প্রবেশ করে সেরা সেবা নিন।</p>
                         
-                        <button onClick={handleGoogleSignIn} className="w-full flex items-center justify-center py-2.5 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors" style={{ color: '#111827' }}>
+                        {/* ==================== Google Button ==================== */}
+                        <button 
+                            onClick={() => handleGoogleLogin()} 
+                            disabled={loading}
+                            className="w-full flex items-center justify-center py-2.5 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" 
+                            style={{ color: '#111827' }}
+                        >
                             <GoogleIcon />
                             গুগল দিয়ে সাইন ইন করুন
                         </button>
+                        {/* ======================================================= */}
 
                         <div className="flex items-center my-6">
                             <hr className="flex-grow border-t border-gray-300"/>
@@ -151,6 +191,7 @@ const SigninPage = () => {
                                 </button>
                             </div>
                             
+                            {/* Error Message */}
                             {error && <p className="text-sm text-red-600 bg-red-50 p-3 rounded-lg text-center">{error}</p>}
 
                             <div className="flex items-center justify-end">

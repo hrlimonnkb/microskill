@@ -7,7 +7,7 @@ import Skeleton, { SkeletonTheme } from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 import { useAuth } from '@/context/AuthContext';
 
-const API_BASE_URL = 'https://api.microskill.com.bd';
+const API_BASE_URL = 'http://localhost:3001';
 
 // ---------- Reusable Components (No changes needed) ----------
 const FormSection = ({ title, icon, children }) => (
@@ -285,7 +285,7 @@ export default function TeacherRegistrationForm() {
                     <FormSection title="ব্যক্তিগত তথ্য" icon={<User className="mr-3 h-6 w-6 text-[#ea670c]" />}>
                          <InputField label="সম্পূর্ণ নাম" name="fullName" value={formData.fullName} onChange={handleChange} placeholder="আপনার পুরো নাম লিখুন" disabled={!editMode} />
                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <InputField label="মোবাইল নম্বর" name="mobileNumber" value={formData.mobileNumber} onChange={handleChange} placeholder="01xxxxxxxxx" required={false}  disabled={!editMode} />
+                            <InputField label="মোবাইল নম্বর" name="mobileNumber" value={formData.mobileNumber} onChange={handleChange} placeholder="01xxxxxxxxx" required={false} />
                             <InputField label="জন্ম তারিখ" name="dateOfBirth" type="date" value={formData.dateOfBirth ? formData.dateOfBirth.split('T')[0] : ''} onChange={handleChange} required={false} />
                          </div>
                          <FileUploadField label="প্রোফাইল ফটো" onFileSelect={(e) => handleFileChange(e, setProfilePhoto, setProfilePhotoPreview)} preview={profilePhotoPreview} fileInfo={profilePhoto} Icon={ImageIcon} acceptedFiles="image/*" />

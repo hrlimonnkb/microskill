@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { ShieldAlert, Trash2, ChevronDown, UserX, Users, UserCircle2, Mail, Phone, Pencil, Save, X, Loader2, PlusCircle, UploadCloud } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
-const API_BASE_URL = 'https://api.microskill.com.bd';
+const API_BASE_URL = 'http://localhost:3001';
 const DEFAULT_ADMIN_EMAIL = 'sheblumicroters@gmail.com';
 
 // --- Helper Components ---

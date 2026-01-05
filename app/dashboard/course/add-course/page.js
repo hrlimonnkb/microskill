@@ -7,7 +7,7 @@ import { useAuth } from '@/context/AuthContext';
 import Skeleton, { SkeletonTheme } from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 
-const API_BASE_URL = 'https://api.microskill.com.bd';
+const API_BASE_URL = 'http://localhost:3001';
 
 // ---------- Reusable Components ----------
 const FormSection = ({ title, icon, children }) => (
@@ -211,30 +211,34 @@ export default function ManageCoursePage() {
         setError(''); setSuccess(''); setIsLoading(true);
 
         const syllabusForSubmission = syllabus.map(section => ({
-            ...section,
+            title: section.title,
             lessons: section.lessons.map(lesson => ({
-                ...lesson,
-                videoFileName: lesson.videoSource === 'upload' && lesson.videoFile ? lesson.videoFile.name : null,
-                videoFile: undefined
+                title: lesson.title,
+                videoSource: lesson.videoSource,
+                videoUrl: lesson.videoUrl || null,
+                gumletAssetId: lesson.gumletAssetId || null,
+                videoFileName: (lesson.videoSource === 'upload' && lesson.videoFile) ? lesson.videoFile.name : null
             }))
         }));
 
         const submissionData = new FormData();
-        Object.entries(formData).forEach(([key, value]) => {
-            submissionData.append(key, Array.isArray(value) ? value.join(',') : value);
-        });
+        
+        // প্রতিটি ডাটা আলাদাভাবে অ্যাপেন্ড করা নিশ্চিত করছি
+        submissionData.append('title', formData.title);
+        submissionData.append('slug', formData.slug);
+        submissionData.append('description', formData.description);
+        submissionData.append('category', formData.category);
+        submissionData.append('language', formData.language);
+        submissionData.append('duration', formData.duration);
+        submissionData.append('numberOfLessons', formData.numberOfLessons);
+        submissionData.append('price', formData.price || 0);
+        submissionData.append('isFree', formData.isFree);
+        submissionData.append('outcomes', formData.outcomes.filter(i => i).join(','));
+        submissionData.append('requirements', formData.requirements.filter(i => i).join(','));
         
         submissionData.append('syllabus', JSON.stringify(syllabusForSubmission));
         if (thumbnail) submissionData.append('thumbnail', thumbnail);
         if (introVideo) submissionData.append('introVideo', introVideo);
-
-        syllabus.forEach(section => {
-            section.lessons.forEach(lesson => {
-                if (lesson.videoSource === 'upload' && lesson.videoFile) {
-                    submissionData.append('lessonVideos', lesson.videoFile, lesson.videoFile.name);
-                }
-            });
-        });
 
         try {
             const url = isEditMode ? `${API_BASE_URL}/api/courses/${courseId}` : `${API_BASE_URL}/api/courses/create`;
@@ -358,7 +362,12 @@ export default function ManageCoursePage() {
                             </FormSection>
                             <FormSection title="পাবলিশ" icon={<CheckCircle className="mr-3 h-6 w-6 text-green-600"/>}>
                                  <button type="submit" disabled={isLoading} className="w-full bg-[#ea670c] text-white font-bold py-3 px-4 rounded-md hover:bg-[#c2570c] flex items-center justify-center disabled:bg-[#fb8a3c] disabled:cursor-not-allowed">
-                                     {isLoading ? <Loader2 className="animate-spin h-5 w-5" /> : (isEditMode ? 'কোর্স আপডেট করুন' : 'কোর্স পাবলিশ করুন')}
+                                     {isLoading ? (
+    <div className="flex items-center gap-2">
+        <Loader2 className="animate-spin h-5 w-5" />
+        <span>ভিডিও প্রসেসিং হচ্ছে, দয়া করে অপেক্ষা করুন...</span>
+    </div>
+) : (isEditMode ? 'কোর্স আপডেট করুন' : 'কোর্স পাবলিশ করুন')}
                                  </button>
                                 <button type="button" className="w-full mt-2 bg-slate-200 text-slate-800 font-bold py-2.5 px-4 rounded-md hover:bg-slate-300">Save as Draft</button>
                             </FormSection>

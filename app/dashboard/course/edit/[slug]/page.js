@@ -7,7 +7,7 @@ import { useAuth } from '@/context/AuthContext';
 import Skeleton, { SkeletonTheme } from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 
-const API_BASE_URL = 'https://api.microskill.com.bd';
+const API_BASE_URL = 'http://localhost:3001';
 
 // --- Reusable Components (can be imported from a shared file) ---
 const FormSection = ({ title, icon, children }) => ( <div className="bg-white p-6 rounded-lg shadow-sm border border-slate-200"><h2 className="text-xl font-semibold text-slate-800 mb-5 flex items-center">{icon}{title}</h2><div className="space-y-4">{children}</div></div> );

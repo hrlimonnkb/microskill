@@ -26,7 +26,7 @@ const Navbar = () => {
   { href: "/faq", text: "প্রশ্নোত্তর" },
 ];
 
-    const IMG_URL="https://api.microskill.com.bd"
+    const IMG_URL="http://localhost:3001"
 
     useEffect(() => {
         const handleClickOutside = (event) => {
