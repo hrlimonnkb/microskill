@@ -87,7 +87,7 @@ export default function AllCoursesPage() {
                         {user?.role.toUpperCase() === 'ADMIN' ? 'Manage all courses in the system.' : 'Manage the courses created by you.'}
                     </p>
                 </div>
-                <Link href="/dashboard/courses/add" passHref>
+                <Link href="/dashboard/course/add-course" passHref>
                    <span className="bg-[#ea670c] text-white font-bold py-2 px-4 rounded-md hover:bg-[#c2570c]">Add New Course</span>
                 </Link>
             </div>
@@ -128,7 +128,7 @@ export default function AllCoursesPage() {
                                             </Link>
                                             {(user?.role.toUpperCase() === 'TEACHER' || user?.id === course.instructor.userId) && (
                                                 <>
-                                                    <Link href={`/dashboard/courses/edit/${course.slug}`} passHref>
+                                                    <Link href={`/dashboard/course/edit/${course.slug}`} passHref>
                                                         <span className="p-2 text-gray-500 hover:text-blue-600 rounded-full" title="Edit Course"><Edit size={18} /></span>
                                                     </Link>
                                                     <button onClick={() => handleDelete(course.id)} className="p-2 text-gray-500 hover:text-red-600 rounded-full" title="Delete Course">

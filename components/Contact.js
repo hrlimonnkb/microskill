@@ -52,7 +52,15 @@ export default function ContactPage() {
             যোগাযোগ করুন
           </h2>
         </div>
-
+<div >
+      <iframe
+            loading="lazy" title="Gumlet video player"
+            src="https://play.gumlet.io/embed/69785a5711ec7dfcb96808c7?background=false&autoplay=false&loop=false&disableControls=false"
+           
+          
+          allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture; fullscreen;">
+          </iframe>
+    </div>
         {/* 5. প্রধান ২-কলাম গ্রিড */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           
@@ -159,7 +167,7 @@ export default function ContactPage() {
                 style={{ border: 0 }} 
                 allowFullScreen="" 
                 loading="lazy" 
-                referrerPolicy="no-referrer-when-downgrade"
+              
                 className="rounded-lg border border-gray-200 shadow-sm"
               ></iframe>
             </div>

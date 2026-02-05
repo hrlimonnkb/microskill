@@ -9,7 +9,7 @@ import { useParams } from 'next/navigation';
 import { User, Clock, PlayCircle, Lock, ChevronDown, ChevronUp, ListChecks } from 'lucide-react';
 import VideoModal from '@/components/VideoModal';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const API_BASE_URL ='http://localhost:3001';
 
 const Skeleton = ({ className }) => <div className={`bg-gray-200 rounded-md animate-pulse ${className}`} />;
 
@@ -40,16 +40,19 @@ const parseIntroVideo = (introVideo) => {
 export default function CoursePage() {
     const params = useParams();
     const slug = params?.slug;
-
+const [modalPlaybackUrl, setModalPlaybackUrl] = useState(null);
+const [modalLicenseUrl, setModalLicenseUrl] = useState(null);
+const [isModalOpen, setIsModalOpen] = useState(false);
+const [modalUserEmail, setModalUserEmail] = useState(null);
     const [course, setCourse] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [introVideoUrl, setIntroVideoUrl] = useState('');
     const [openSections, setOpenSections] = useState({});
-    const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalVideoUrl, setModalVideoUrl] = useState('');
-
-    useEffect(() => {
+const [isEnrolled, setIsEnrolled] = useState(false);
+    const [enrollmentLoading, setEnrollmentLoading] = useState(false);
+useEffect(() => {
         if (!slug) {
             setError('Course slug is missing');
             setLoading(false);
@@ -76,6 +79,10 @@ export default function CoursePage() {
                 if (data.sections?.[0]) {
                     setOpenSections({ [data.sections[0].id]: true });
                 }
+
+                // ✅ Check enrollment status
+                await checkEnrollmentStatus(data.id);
+
             } catch (err) {
                 setError(err.message);
                 console.error('Error fetching course:', err);
@@ -87,21 +94,137 @@ export default function CoursePage() {
         fetchCourse();
     }, [slug]);
 
-    const handleLessonSelect = (lesson) => {
-        if (lesson.isLocked) {
-            alert("এই লেসনটি দেখার জন্য আপনাকে কোর্সটিতে এনরোল করতে হবে।");
-            return;
-        }
+    // ✅ Check if user is enrolled
+  // ✅ Check if user is enrolled
+    const checkEnrollmentStatus = async (courseId) => {
+        try {
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                console.log('⚠️ No token found - user not logged in');
+                setIsEnrolled(false);
+                return;
+            }
 
-        const videoUrl = lesson.videoUrl;
+            console.log('🔑 Token found:', token.substring(0, 20) + '...');
 
-        if (videoUrl) {
-            setModalVideoUrl(videoUrl);
-            setIsModalOpen(true);
-        } else {
-            alert("ভিডিও পাওয়া যায়নি।");
+            const res = await fetch(`${API_BASE_URL}/api/courses/check-enrollment/${courseId}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            console.log('📡 Check enrollment response status:', res.status);
+
+            if (res.ok) {
+                const data = await res.json();
+                setIsEnrolled(data.isEnrolled);
+                console.log('✅ Enrollment status:', data.isEnrolled);
+            }
+        } catch (err) {
+            console.error('Error checking enrollment:', err);
         }
     };
+
+    // ✅ Enroll in course
+  // ✅ Enroll in course
+    const handleEnroll = async () => {
+        try {
+            const token = localStorage.getItem('authToken');
+            
+            console.log('🔐 Enrolling with token:', token ? 'Token exists' : 'No token');
+            
+            if (!token) {
+                alert('প্রথমে লগইন করুন');
+                // TODO: Redirect to login page
+                window.location.href = '/login'; // অথবা আপনার login page route
+                return;
+            }
+
+            setEnrollmentLoading(true);
+            console.log('📤 Sending enroll request to:', `${API_BASE_URL}/api/courses/enroll/${course.id}`);
+
+            const res = await fetch(`${API_BASE_URL}/api/courses/enroll/${course.id}`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            console.log('📥 Enroll response status:', res.status);
+
+            const data = await res.json();
+
+            if (res.ok && data.success) {
+                setIsEnrolled(true);
+                alert(`✅ ${data.message}`);
+            } else if (data.requiresPayment) {
+                // TODO: Redirect to payment page
+                alert(`এই কোর্সটি ৳${course.price} টাকা। পেমেন্ট করুন।`);
+            } else {
+                alert(data.message || 'এনরোল করতে সমস্যা হয়েছে');
+            }
+
+        } catch (err) {
+            console.error('Enroll error:', err);
+            alert('এনরোল করতে সমস্যা হয়েছে');
+        } finally {
+            setEnrollmentLoading(false);
+        }
+    };
+
+const handleLessonSelect = async (lesson) => {
+    // ✅ Enrollment check করো
+    if (lesson.isLocked && !isEnrolled) {
+        alert('এই লেসনটি দেখতে কোর্সে এনরোল করুন।');
+        return;
+    }
+
+    console.log('🎬 Lesson clicked:', lesson.id, lesson.title);
+
+try {
+        const token = localStorage.getItem('authToken'); // ✅ Token নাও
+        
+        if (!token) {
+            alert('প্রথমে লগইন করুন');
+            return;
+        }
+        
+        const res = await fetch(`${API_BASE_URL}/api/courses/get-video-url`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` // ✅ Token পাঠাও
+            },
+            body: JSON.stringify({ lessonId: lesson.id })
+        });
+
+        console.log('📡 API Response status:', res.status);
+
+        if (!res.ok) {
+            const errData = await res.json().catch(() => ({ message: 'Unknown error' }));
+            console.error('❌ API Error:', errData);
+            throw new Error(errData.message || 'Failed to fetch video URL');
+        }
+
+        const data = await res.json();
+        console.log('✅ Backend returned:', data);
+
+        if (!data.success || !data.playbackUrl) {
+            throw new Error('Invalid response from server');
+        }
+
+       setModalPlaybackUrl(data.playbackUrl);
+        setModalLicenseUrl(data.licenseUrl || null);
+        setModalUserEmail(data.userEmail || null); // ✅ User email save করো
+        setIsModalOpen(true);
+
+    } catch (err) {
+        console.error('❌ Fetch error:', err);
+        alert(`ভিডিও লোড করতে সমস্যা হয়েছে: ${err.message}`);
+    }
+};
 
     const closeModal = () => {
         setIsModalOpen(false);
@@ -222,8 +345,9 @@ export default function CoursePage() {
                                         
                                         <div className={`overflow-hidden transition-all duration-300 ${openSections[section.id] ? 'max-h-[1000px]' : 'max-h-0'}`}>
                                             <ul className="pl-2 pb-4 space-y-1">
-                                                {section.lessons && section.lessons.map((lesson, lessonIndex) => {
-                                                    const isLocked = !(sectionIndex === 0 && lessonIndex === 0);
+                                               {section.lessons && section.lessons.map((lesson, lessonIndex) => {
+                                                    // ✅ Enrolled হলে সব lesson unlock, না হলে শুধু first lesson free
+                                                    const isLocked = !isEnrolled && !(sectionIndex === 0 && lessonIndex === 0);
 
                                                     return (
                                                         <li key={lesson.id}>
@@ -296,9 +420,27 @@ export default function CoursePage() {
                                 )}
                             </div>
 
-                            <button className="w-full bg-[#f97316] hover:bg-[#c2570c] text-white font-bold py-3 px-4 rounded-lg mb-4 transition">
-                                {course.isFree ? 'ফ্রিতে শুরু করুন' : 'এখনই কিনুন'}
-                            </button>
+                            {isEnrolled ? (
+                                <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg mb-4 text-center">
+                                    <p className="font-semibold">✅ আপনি এনরোল করেছেন</p>
+                                    <p className="text-sm mt-1">সব লেসন এখন আনলক</p>
+                                </div>
+                            ) : (
+                                <button 
+                                    onClick={handleEnroll}
+                                    disabled={enrollmentLoading}
+                                    className="w-full bg-[#f97316] hover:bg-[#c2570c] text-white font-bold py-3 px-4 rounded-lg mb-4 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    {enrollmentLoading ? (
+                                        <span className="flex items-center justify-center">
+                                            <span className="animate-spin mr-2">⏳</span>
+                                            অপেক্ষা করুন...
+                                        </span>
+                                    ) : (
+                                        course.isFree ? 'ফ্রিতে এনরোল করুন' : `৳${course.price} - এখনই কিনুন`
+                                    )}
+                                </button>
+                            )}
 
                             <div className="space-y-3 text-sm">
                                 <div className="flex justify-between">
@@ -320,11 +462,18 @@ export default function CoursePage() {
             </div>
 
             {/* Video Modal */}
-            <VideoModal 
-                isOpen={isModalOpen} 
-                videoUrl={modalVideoUrl} 
-                onClose={closeModal} 
-            />
+           <VideoModal
+    isOpen={isModalOpen && modalPlaybackUrl}
+    playbackUrl={modalPlaybackUrl || ''}
+    licenseUrl={modalLicenseUrl || ''}
+    userEmail={modalUserEmail} // ✅ User email pass করো
+    onClose={() => {
+        setIsModalOpen(false);
+        setModalPlaybackUrl(null);
+        setModalLicenseUrl(null);
+        setModalUserEmail(null); // ✅ Email clear করো
+    }}
+/>
         </div>
     );
 }

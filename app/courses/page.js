@@ -111,6 +111,7 @@ export default function AllCoursesPage() {
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                     {courses.map((course) => (
                                         <div key={course.id} className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden border border-slate-200">
+                                            {console.log(course)}
                                             <img
                                                 className="w-full h-48 object-cover"
                                                 src={course.thumbnail ? `${API_BASE_URL}/${course.thumbnail}` : 'https://placehold.co/400x240/e2e8f0/64748b?text=Course'}
@@ -126,7 +127,7 @@ export default function AllCoursesPage() {
                                                 
                                                 <div className="flex items-center text-sm text-slate-500 mb-3 space-x-4">
                                                     <span className="flex items-center">
-                                                        <Users size={14} className="mr-1 text-slate-400" /> 0 শিক্ষার্থী
+<Users size={14} className="mr-1 text-slate-400" /> {course._count?.enrollments || 0} শিক্ষার্থী
                                                     </span>
                                                     <span className="flex items-center">
                                                         <Clock size={14} className="mr-1 text-slate-400" /> {course.duration}

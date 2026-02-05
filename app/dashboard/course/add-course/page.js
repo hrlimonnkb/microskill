@@ -236,10 +236,29 @@ export default function ManageCoursePage() {
         submissionData.append('outcomes', formData.outcomes.filter(i => i).join(','));
         submissionData.append('requirements', formData.requirements.filter(i => i).join(','));
         
-        submissionData.append('syllabus', JSON.stringify(syllabusForSubmission));
-        if (thumbnail) submissionData.append('thumbnail', thumbnail);
-        if (introVideo) submissionData.append('introVideo', introVideo);
+  
+submissionData.append('syllabus', JSON.stringify(syllabusForSubmission));
 
+// ✅ Lesson videos systematically append করো
+console.log('📤 Appending lesson videos to FormData...');
+let videoFileIndex = 0;
+syllabus.forEach((section, sectionIndex) => {
+    section.lessons.forEach((lesson, lessonIndex) => {
+        if (lesson.videoSource === 'upload' && lesson.videoFile) {
+            console.log(`  Video ${videoFileIndex + 1}: Section ${sectionIndex + 1}, Lesson ${lessonIndex + 1}`);
+            console.log(`    Title: ${lesson.title}`);
+            console.log(`    Filename: ${lesson.videoFile.name}`);
+            console.log(`    Size: ${(lesson.videoFile.size / 1024 / 1024).toFixed(2)} MB`);
+            
+            submissionData.append('lessonVideos', lesson.videoFile);
+            videoFileIndex++;
+        }
+    });
+});
+console.log(`✅ Total ${videoFileIndex} lesson videos appended`);
+
+if (thumbnail) submissionData.append('thumbnail', thumbnail);
+if (introVideo) submissionData.append('introVideo', introVideo);
         try {
             const url = isEditMode ? `${API_BASE_URL}/api/courses/${courseId}` : `${API_BASE_URL}/api/courses/create`;
             const method = isEditMode ? 'PUT' : 'POST';
