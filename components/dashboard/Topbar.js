@@ -10,7 +10,7 @@ const Topbar = ({ setIsSidebarOpen }) => {
     const { user, loading, logout } = useAuth();
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const dropdownRef = useRef(null);
-    const IMG_URL="http://localhost:3001"
+    const IMG_URL="https://api.microskill.com.bd"
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -30,9 +30,15 @@ const Topbar = ({ setIsSidebarOpen }) => {
                 <button
                     onClick={() => setIsDropdownOpen(prev => !prev)}
                     className="flex items-center gap-2 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                >
-                    {user.image ? (
-                        <img className="h-10 w-10 rounded-full" src={`${IMG_URL}/${user.image}`} alt={user.name} width={40} height={40} />
+                >{user.image ? (
+                        <Image 
+                            className="h-10 w-10 rounded-full" 
+                            src={user.image} 
+                            alt={user.name || 'User'} 
+                            width={40} 
+                            height={40}
+                            unoptimized={user.image.startsWith('http://localhost')}
+                        />
                     ) : (
                         <UserCircle className="h-10 w-10 text-gray-600" />
                     )}

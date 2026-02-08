@@ -43,7 +43,7 @@ const SigninPage = () => {
             
             try {
                 // আপনার ব্যাকএন্ডে টোকেন পাঠানো হচ্ছে
-                const response = await fetch('http://localhost:3001/api/auth/google-login', {
+                const response = await fetch('https://api.microskill.com.bd/api/auth/google-login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
@@ -89,7 +89,7 @@ const SigninPage = () => {
         setLoading(true);
 
         try {
-            const response = await fetch('http://localhost:3001/api/auth/signin', {
+            const response = await fetch('https://api.microskill.com.bd/api/auth/signin', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData),

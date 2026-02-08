@@ -16,7 +16,7 @@ export default function ForgotPasswordPage() {
         setMessage({ type: '', text: '' });
 
         try {
-            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.microskill.com.bd';
             const response = await fetch(`${apiUrl}/api/auth/request-password-reset`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },

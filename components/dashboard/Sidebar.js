@@ -6,10 +6,13 @@ import { usePathname } from 'next/navigation';
 import { ShoppingBag, Home, BookOpen, BarChart2, Settings, X, Users, ChevronDown, User2 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
+
 const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
     const pathname = usePathname();
     const [openMenus, setOpenMenus] = useState({});
  const { user } = useAuth();
+ console.log("User in Sidebar:", user);
+ 
        const allNavLinks = [
         { 
             href: "/dashboard", 
@@ -40,7 +43,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
         { 
             href: "/dashboard/users/all-user", 
             icon: User2, 
-            text: "ইউজার",
+            text: "স্টুডেন্টস",
             roles: ['ADMIN'] // Only Admin
         },
         { 

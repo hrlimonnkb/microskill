@@ -6,7 +6,7 @@ import { AuthProvider } from '@/context/AuthContext';
 
 export function Providers({ children }) {
   // আপনার Google Cloud Console থেকে পাওয়া Client ID এখানে দিন
-  const clientId = "167499456622-88a53l5d2cdu5em23og3ttouetkbljdi.apps.googleusercontent.com";
+  const clientId = "174460517400-gqmvcil131gg60oi5jo6vuvf829b6iqk.apps.googleusercontent.com";
 
   return (
     <AuthProvider>

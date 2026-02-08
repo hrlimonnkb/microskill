@@ -3,8 +3,9 @@
 import { useState, useEffect } from 'react';
 import { ShieldAlert, Trash2, ChevronDown, UserX, Users, UserCircle2, Mail, Phone, Pencil, Save, X, Loader2, PlusCircle, UploadCloud } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import Image from 'next/image';
 
-const API_BASE_URL = 'http://localhost:3001';
+const API_BASE_URL = 'https://api.microskill.com.bd';
 const DEFAULT_ADMIN_EMAIL = 'sheblumicroters@gmail.com';
 
 // --- Helper Components ---
@@ -270,7 +271,8 @@ export default function UserManagementTable() {
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div className="flex items-center">
                                             <div className="flex-shrink-0 h-10 w-10">
-                                                <img className="h-10 w-10 rounded-full object-cover" src={u.image ? `${API_BASE_URL}/${u.image}` : `https://placehold.co/40x40/e2e8f0/64748b?text=${u.name ? u.name.charAt(0).toUpperCase() : '?'}`} alt={u.name || u.username} />
+                                                <Image className="h-10 w-10 rounded-full object-cover"  width={40} 
+                            height={40} src={u.image ? `${u.image}` : `https://placehold.co/40x40/e2e8f0/64748b?text=${u.name ? u.name.charAt(0).toUpperCase() : '?'}`} alt={u.name || u.username} />
                                             </div>
                                             <div className="ml-4">
                                                 <div className="text-sm font-semibold text-gray-900">{u.name || 'N/A'}</div>

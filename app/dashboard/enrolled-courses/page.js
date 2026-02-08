@@ -7,7 +7,7 @@ import { Play, BookOpen, Clock, CheckCircle, BarChart3 } from 'lucide-react';
 import Skeleton, { SkeletonTheme } from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 
-const API_BASE_URL = 'http://localhost:3001';
+const API_BASE_URL = 'https://api.microskill.com.bd';
 
 const EnrolledCourseCardSkeleton = () => (
     <div className="bg-white border-2 border-gray-200 rounded-xl overflow-hidden shadow-lg">

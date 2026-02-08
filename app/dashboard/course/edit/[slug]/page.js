@@ -5,7 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { Plus, Trash2, Film, Image as ImageIcon, BookOpen, DollarSign, Target, ListChecks, CheckCircle, GripVertical, User, Tag, Upload, X, Loader2 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
-const API_BASE_URL = 'http://localhost:3001';
+const API_BASE_URL = 'https://api.microskill.com.bd';
 
 // Reusable Components
 const FormSection = ({ title, icon, children }) => (

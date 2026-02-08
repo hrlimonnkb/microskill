@@ -44,7 +44,7 @@ const ResetPasswordContent = () => {
         setLoading(true);
 
         try {
-            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.microskill.com.bd';
             const response = await fetch(`${apiUrl}/api/auth/reset-password`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },

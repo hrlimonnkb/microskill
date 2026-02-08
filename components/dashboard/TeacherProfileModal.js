@@ -2,7 +2,7 @@
 
 import { User, Mail, Smartphone, Calendar, BookOpen, Star, Link as LinkIcon, Banknote, ShieldCheck, Award, Languages, Video, Clock, X, Info } from 'lucide-react';
 
-const API_BASE_URL = 'http://localhost:3001';
+const API_BASE_URL = 'https://api.microskill.com.bd';
 
 // স্ট্যাটাস ব্যাজ
 const StatusBadge = ({ status }) => {

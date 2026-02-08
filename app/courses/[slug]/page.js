@@ -9,7 +9,7 @@ import { useParams } from 'next/navigation';
 import { User, Clock, PlayCircle, Lock, ChevronDown, ChevronUp, ListChecks } from 'lucide-react';
 import VideoModal from '@/components/VideoModal';
 
-const API_BASE_URL ='http://localhost:3001';
+const API_BASE_URL ='https://api.microskill.com.bd';
 
 const Skeleton = ({ className }) => <div className={`bg-gray-200 rounded-md animate-pulse ${className}`} />;
 

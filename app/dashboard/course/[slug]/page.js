@@ -11,7 +11,7 @@ import {
     CheckCircle
 } from 'lucide-react';
 
-const API_BASE_URL = 'http://localhost:3001';
+const API_BASE_URL = 'https://api.microskill.com.bd';
 
 export default function CoursePlayerPage() {
     const { slug } = useParams();

@@ -9,7 +9,7 @@ import 'react-loading-skeleton/dist/skeleton.css';
 import TeacherProfileModal from '@/components/dashboard/TeacherProfileModal';
 import { useAuth } from '@/context/AuthContext';
 
-const API_BASE_URL = 'http://localhost:3001';
+const API_BASE_URL = 'https://api.microskill.com.bd';
 
 // --- Reusable Components ---
 
