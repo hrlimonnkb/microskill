@@ -10,7 +10,7 @@ import 'react-loading-skeleton/dist/skeleton.css';
 const API_BASE_URL = 'http://localhost:3001';
 
 const EnrolledCourseCardSkeleton = () => (
-    <div className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-xl overflow-hidden shadow-lg">
+    <div className="bg-white border-2 border-gray-200 rounded-xl overflow-hidden shadow-lg">
         <Skeleton height={160} className="w-full" />
         <div className="p-6">
             <Skeleton height={24} width="80%" className="mb-2" />
@@ -79,10 +79,10 @@ export default function EnrolledCoursesPage() {
     };
 
     const getProgressColor = (progress) => {
-        if (progress === 0) return 'bg-gray-400';
-        if (progress < 30) return 'bg-red-500';
-        if (progress < 70) return 'bg-yellow-500';
-        return 'bg-green-500';
+        if (progress === 0) return 'bg-gray-300';
+        if (progress < 30) return 'bg-gray-400';
+        if (progress < 70) return 'bg-gray-600';
+        return 'bg-black';
     };
 
     const getButtonText = (progress) => {
@@ -98,10 +98,10 @@ export default function EnrolledCoursesPage() {
 
     if (error) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 py-12 px-4">
+            <div className="min-h-screen bg-gray-50 py-12 px-4">
                 <div className="max-w-7xl mx-auto">
-                    <div className="bg-red-900/30 border border-red-500 rounded-lg p-6 text-center">
-                        <p className="text-red-200 text-lg">{error}</p>
+                    <div className="bg-white border-2 border-gray-800 rounded-lg p-6 text-center">
+                        <p className="text-gray-800 text-lg">{error}</p>
                     </div>
                 </div>
             </div>
@@ -109,15 +109,15 @@ export default function EnrolledCoursesPage() {
     }
 
     return (
-        <SkeletonTheme baseColor="#1e293b" highlightColor="#334155">
-            <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 py-12 px-4 sm:px-6 lg:px-8">
+        <SkeletonTheme baseColor="#e5e7eb" highlightColor="#f3f4f6">
+            <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
                 <div className="max-w-7xl mx-auto">
                     {/* Header */}
                     <div className="mb-8">
-                        <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
+                        <h1 className="text-3xl md:text-4xl font-bold text-black mb-2">
                             আমার কোর্সসমূহ
                         </h1>
-                        <p className="text-gray-400">
+                        <p className="text-gray-600">
                             মোট {enrollments.length}টি কোর্সে এনরোল করেছেন
                         </p>
                     </div>
@@ -125,39 +125,39 @@ export default function EnrolledCoursesPage() {
                     {/* Stats Overview */}
                     {!loading && enrollments.length > 0 && (
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                            <div className="bg-gradient-to-br from-purple-600 to-purple-700 rounded-xl p-6 shadow-lg">
+                            <div className="bg-white border-2 border-gray-800 rounded-xl p-6 shadow-lg">
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <p className="text-purple-200 text-sm font-medium">মোট কোর্স</p>
-                                        <p className="text-4xl font-bold text-white mt-2">
+                                        <p className="text-gray-600 text-sm font-medium">মোট কোর্স</p>
+                                        <p className="text-4xl font-bold text-black mt-2">
                                             {enrollments.length}
                                         </p>
                                     </div>
-                                    <BookOpen className="text-purple-300" size={40} />
+                                    <BookOpen className="text-gray-800" size={40} />
                                 </div>
                             </div>
 
-                            <div className="bg-gradient-to-br from-green-600 to-green-700 rounded-xl p-6 shadow-lg">
+                            <div className="bg-black text-white border-2 border-black rounded-xl p-6 shadow-lg">
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <p className="text-green-200 text-sm font-medium">সম্পন্ন কোর্স</p>
+                                        <p className="text-gray-300 text-sm font-medium">সম্পন্ন কোর্স</p>
                                         <p className="text-4xl font-bold text-white mt-2">
                                             {enrollments.filter(e => e.progress === 100).length}
                                         </p>
                                     </div>
-                                    <CheckCircle className="text-green-300" size={40} />
+                                    <CheckCircle className="text-gray-300" size={40} />
                                 </div>
                             </div>
 
-                            <div className="bg-gradient-to-br from-orange-600 to-orange-700 rounded-xl p-6 shadow-lg">
+                            <div className="bg-white border-2 border-gray-400 rounded-xl p-6 shadow-lg">
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <p className="text-orange-200 text-sm font-medium">চলমান কোর্স</p>
-                                        <p className="text-4xl font-bold text-white mt-2">
+                                        <p className="text-gray-600 text-sm font-medium">চলমান কোর্স</p>
+                                        <p className="text-4xl font-bold text-black mt-2">
                                             {enrollments.filter(e => e.progress > 0 && e.progress < 100).length}
                                         </p>
                                     </div>
-                                    <Clock className="text-orange-300" size={40} />
+                                    <Clock className="text-gray-600" size={40} />
                                 </div>
                             </div>
                         </div>
@@ -171,16 +171,16 @@ export default function EnrolledCoursesPage() {
                             ))}
                         </div>
                     ) : enrollments.length === 0 ? (
-                        <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-12 text-center shadow-lg border border-slate-700">
-                            <BookOpen className="mx-auto text-slate-600 mb-4" size={64} />
-                            <h3 className="text-2xl font-bold text-white mb-2">
+                        <div className="bg-white border-2 border-gray-300 rounded-xl p-12 text-center shadow-lg">
+                            <BookOpen className="mx-auto text-gray-400 mb-4" size={64} />
+                            <h3 className="text-2xl font-bold text-black mb-2">
                                 এখনও কোনো কোর্সে এনরোল করেননি
                             </h3>
-                            <p className="text-gray-400 mb-6">
+                            <p className="text-gray-600 mb-6">
                                 আমাদের কোর্স লাইব্রেরি থেকে আপনার পছন্দের কোর্স খুঁজে নিন
                             </p>
                             <Link href="/courses">
-                                <span className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-[#f97316] to-[#ea670c] text-white font-semibold rounded-lg hover:shadow-xl transition-all duration-300 cursor-pointer">
+                                <span className="inline-flex items-center px-6 py-3 bg-black text-white font-semibold rounded-lg hover:bg-gray-800 hover:shadow-xl transition-all duration-300 cursor-pointer">
                                     <BookOpen size={20} className="mr-2" />
                                     কোর্স ব্রাউজ করুন
                                 </span>
@@ -191,29 +191,29 @@ export default function EnrolledCoursesPage() {
                             {enrollments.map((enrollment) => (
                                 <div
                                     key={enrollment.id}
-                                    className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 border border-slate-700/50 hover:border-[#f97316]/50"
+                                    className="bg-white border-2 border-gray-300 rounded-xl overflow-hidden shadow-lg hover:shadow-2xl hover:border-black transition-all duration-300"
                                 >
                                     {/* Thumbnail */}
-                                    <div className="relative h-40 overflow-hidden">
+                                    <div className="relative h-40 overflow-hidden bg-gray-100">
                                         <img
                                             src={enrollment.course.thumbnail 
                                                 ? `${API_BASE_URL}/${enrollment.course.thumbnail}` 
-                                                : 'https://placehold.co/400x240/1a1a2e/f97316?text=Course'}
+                                                : 'https://placehold.co/400x240/ffffff/000000?text=Course'}
                                             alt={enrollment.course.title}
                                             className="w-full h-full object-cover"
                                         />
                                         <div className="absolute top-3 right-3">
                                             {enrollment.progress === 100 ? (
-                                                <span className="bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1">
+                                                <span className="bg-black text-white text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1">
                                                     <CheckCircle size={14} />
                                                     সম্পন্ন
                                                 </span>
                                             ) : enrollment.progress > 0 ? (
-                                                <span className="bg-orange-500 text-white text-xs font-bold px-3 py-1 rounded-full">
+                                                <span className="bg-gray-600 text-white text-xs font-bold px-3 py-1 rounded-full">
                                                     চলমান
                                                 </span>
                                             ) : (
-                                                <span className="bg-blue-500 text-white text-xs font-bold px-3 py-1 rounded-full">
+                                                <span className="bg-gray-400 text-white text-xs font-bold px-3 py-1 rounded-full">
                                                     নতুন
                                                 </span>
                                             )}
@@ -222,11 +222,11 @@ export default function EnrolledCoursesPage() {
 
                                     {/* Content */}
                                     <div className="p-6">
-                                        <h3 className="text-lg font-bold text-white mb-2 line-clamp-2 hover:text-[#f97316] transition-colors">
+                                        <h3 className="text-lg font-bold text-black mb-2 line-clamp-2 hover:text-gray-600 transition-colors">
                                             {enrollment.course.title}
                                         </h3>
                                         
-                                        <p className="text-sm text-gray-400 mb-4 flex items-center">
+                                        <p className="text-sm text-gray-600 mb-4 flex items-center">
                                             <BookOpen size={14} className="mr-1" />
                                             {enrollment.course.instructor.fullName}
                                         </p>
@@ -234,15 +234,15 @@ export default function EnrolledCoursesPage() {
                                         {/* Progress Bar */}
                                         <div className="mb-4">
                                             <div className="flex justify-between items-center mb-2">
-                                                <span className="text-xs text-gray-400 flex items-center gap-1">
+                                                <span className="text-xs text-gray-600 flex items-center gap-1">
                                                     <BarChart3 size={14} />
                                                     অগ্রগতি
                                                 </span>
-                                                <span className="text-sm font-bold text-white">
+                                                <span className="text-sm font-bold text-black">
                                                     {enrollment.progress}%
                                                 </span>
                                             </div>
-                                            <div className="w-full bg-gray-700 rounded-full h-2 overflow-hidden">
+                                            <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
                                                 <div
                                                     className={`h-full ${getProgressColor(enrollment.progress)} transition-all duration-500 rounded-full`}
                                                     style={{ width: `${enrollment.progress}%` }}
@@ -256,7 +256,7 @@ export default function EnrolledCoursesPage() {
                                                 href={`/dashboard/course/${enrollment.course.slug}`}
                                                 className="flex-1"
                                             >
-                                                <button className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#f97316] to-[#ea670c] text-white font-semibold rounded-lg hover:shadow-lg hover:scale-105 transition-all duration-200">
+                                                <button className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-black text-white font-semibold rounded-lg hover:bg-gray-800 hover:shadow-lg hover:scale-105 transition-all duration-200">
                                                     {getButtonIcon(enrollment.progress)}
                                                     {getButtonText(enrollment.progress)}
                                                 </button>
@@ -265,7 +265,7 @@ export default function EnrolledCoursesPage() {
                                             <Link 
                                                 href={`/course/${enrollment.course.slug}`}
                                             >
-                                                <button className="px-4 py-2.5 border-2 border-slate-600 text-slate-300 font-semibold rounded-lg hover:border-[#f97316] hover:text-[#f97316] transition-all duration-200">
+                                                <button className="px-4 py-2.5 border-2 border-gray-400 text-gray-700 font-semibold rounded-lg hover:border-black hover:text-black transition-all duration-200">
                                                     <BookOpen size={18} />
                                                 </button>
                                             </Link>

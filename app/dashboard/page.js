@@ -22,7 +22,7 @@ export default function DashboardPage() {
 
     const fetchDashboardData = async () => {
         try {
-            const token = localStorage.getItem('token');
+            const token = localStorage.getItem('authToken');
             if (!token) return;
 
             if (user?.role === 'TEACHER' || user?.role === 'ADMIN') {
@@ -65,34 +65,70 @@ export default function DashboardPage() {
         setRecentCourses(enrollments.slice(0, 6));
     };
 
-    const fetchTeacherStats = async (token) => {
-        // Fetch teacher's courses
-        const coursesRes = await fetch(`${API_BASE_URL}/api/courses/my-courses`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const coursesData = await coursesRes.json();
-        const courses = Array.isArray(coursesData) ? coursesData : [];
+ const fetchTeacherStats = async (token) => {
+    console.log('🎓 Fetching Teacher Stats...');
+    
+    // Fetch teacher's courses
+    const coursesRes = await fetch(`${API_BASE_URL}/api/courses/my-courses`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+    });
+    
+    console.log('📥 Teacher Courses API Status:', coursesRes.status);
+    
+    if (!coursesRes.ok) {
+        const errorText = await coursesRes.text();
+        console.error('❌ API Error:', errorText);
+        throw new Error(`Failed to fetch courses (Status: ${coursesRes.status})`);
+    }
+    
+    const coursesData = await coursesRes.json();
+    console.log('✅ Courses Data:', coursesData);
+    
+    const courses = Array.isArray(coursesData) ? coursesData : [];
+    console.log('📚 Total Courses:', courses.length);
 
-        // Calculate stats
-        const totalCourses = courses.length;
-        const totalStudents = courses.reduce((sum, course) => {
-            return sum + (course._count?.enrollments || 0);
-        }, 0);
-        const totalRevenue = courses.reduce((sum, course) => {
-            const enrollments = course._count?.enrollments || 0;
-            return sum + (course.price * enrollments);
-        }, 0);
-        const activeCourses = courses.filter(c => c._count?.enrollments > 0).length;
+    // ✅ প্রতিটা course এর enrollment count debug করো
+    courses.forEach((course, index) => {
+        console.log(`\nCourse ${index + 1}: ${course.title}`);
+        console.log('   _count object:', course._count);
+        console.log('   Enrollments:', course._count?.enrollments || 0);
+    });
 
-        setStats({
-            totalCourses,
-            totalStudents,
-            totalRevenue,
-            activeCourses
-        });
+    // Calculate stats
+    const totalCourses = courses.length;
+    const totalStudents = courses.reduce((sum, course) => {
+        const enrollments = course._count?.enrollments || 0;
+        console.log(`   Adding ${enrollments} students from "${course.title}"`);
+        return sum + enrollments;
+    }, 0);
+    const totalRevenue = courses.reduce((sum, course) => {
+        const enrollments = course._count?.enrollments || 0;
+        const revenue = course.price * enrollments;
+        console.log(`   Revenue from "${course.title}": ৳${revenue}`);
+        return sum + revenue;
+    }, 0);
+    const activeCourses = courses.filter(c => {
+        const hasEnrollments = (c._count?.enrollments || 0) > 0;
+        console.log(`   "${c.title}" active: ${hasEnrollments}`);
+        return hasEnrollments;
+    }).length;
 
-        setRecentCourses(courses.slice(0, 6));
-    };
+    console.log('\n📊 Final Stats Calculated:');
+    console.log('   Total Courses:', totalCourses);
+    console.log('   Total Students:', totalStudents);
+    console.log('   Total Revenue: ৳', totalRevenue);
+    console.log('   Active Courses:', activeCourses);
+
+    setStats({
+        totalCourses,
+        totalStudents,
+        totalRevenue,
+        activeCourses
+    });
+
+    setRecentCourses(courses.slice(0, 6));
+    console.log('✅ Teacher stats loaded successfully');
+};
 
     if (loading) {
         return (
@@ -238,7 +274,7 @@ export default function DashboardPage() {
                                                 />
                                             </div>
                                         </div>
-                                        <Link href={`/dashboard/courses/${enrollment.course.slug}`}>
+                                        <Link href={`/dashboard/course/${enrollment.course.slug}`}>
                                             <button className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-[#f97316] text-white font-semibold rounded-lg hover:bg-[#ea670c] transition-colors">
                                                 <PlayCircle size={18} />
                                                 {enrollment.progress === 0 ? 'শুরু করুন' : 
@@ -301,6 +337,7 @@ export default function DashboardPage() {
                 <div className="bg-gradient-to-br from-green-500 to-green-600 p-6 rounded-xl shadow-lg text-white">
                     <div className="flex items-center justify-between mb-4">
                         <Users size={32} />
+                        {console.log(stats)}
                         <span className="text-3xl font-bold">{stats?.totalStudents || 0}</span>
                     </div>
                     <h3 className="text-lg font-semibold">মোট শিক্ষার্থী</h3>
@@ -397,7 +434,7 @@ export default function DashboardPage() {
                                         </span>
                                     </div>
                                     <div className="flex gap-2">
-                                        <Link href={`/courses/${course.slug}`} className="flex-1">
+                                        <Link href={`/course/${course.slug}`} className="flex-1">
                                             <button className="w-full flex items-center justify-center gap-2 px-3 py-2 border-2 border-gray-300 text-gray-700 font-semibold rounded-lg hover:border-[#f97316] hover:text-[#f97316] transition-colors">
                                                 <Eye size={16} />
                                                 দেখুন

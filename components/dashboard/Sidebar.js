@@ -4,36 +4,77 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ShoppingBag, Home, BookOpen, BarChart2, Settings, X, Users, ChevronDown, User2 } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 
 const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
     const pathname = usePathname();
     const [openMenus, setOpenMenus] = useState({});
-
-    // Updated navigation links with nested children
-    const navLinks = [
-        { href: "/dashboard", icon: Home, text: "ড্যাশবোর্ড" },
+ const { user } = useAuth();
+       const allNavLinks = [
+        { 
+            href: "/dashboard", 
+            icon: Home, 
+            text: "ড্যাশবোর্ড",
+            roles: ['ADMIN', 'TEACHER', 'STUDENT'] // All roles can see dashboard
+        },
         {
-            id: 'courses', // Unique ID for state management
+            id: 'courses',
             icon: BookOpen,
             text: "কোর্স",
+            roles: ['ADMIN', 'TEACHER'], // Only Admin and Teacher
             children: [
                 { href: "/dashboard/course/add-course", text: "কোর্স যোগ করুন" },
                 { href: "/dashboard/course/all-course", text: "সকল কোর্স" },
             ]
         },
         {
-            id: 'teachers', // Unique ID for state management
+            id: 'teachers',
             icon: Users,
             text: "শিক্ষক",
+            roles: ['ADMIN'], // Only Admin
             children: [
                 { href: "/dashboard/teacher/add-teacher", text: "শিক্ষক যোগ করুন" },
                 { href: "/dashboard/teacher/teachers", text: "সকল শিক্ষক" },
             ]
         },
-        { href: "/dashboard/users/all-user", icon: User2, text: "ইউজার" },
-        { href: "/dashboard/analytics", icon: BarChart2, text: "অ্যানালিটিক্স" },
-        { href: "/dashboard/settings", icon: Settings, text: "সেটিংস" },
+        { 
+            href: "/dashboard/users/all-user", 
+            icon: User2, 
+            text: "ইউজার",
+            roles: ['ADMIN'] // Only Admin
+        },
+        { 
+            href: "/dashboard/analytics", 
+            icon: BarChart2, 
+            text: "অ্যানালিটিক্স",
+            roles: ['ADMIN'] // Only Admin
+        },
+        { 
+            href: "/dashboard/settings", 
+            icon: Settings, 
+            text: "সেটিংস",
+            roles: ['ADMIN', 'TEACHER', 'STUDENT'] // All roles
+        },
     ];
+
+    // ✅ Filter navigation links based on user role
+    const navLinks = allNavLinks.filter(link => {
+        if (!user || !user.role) {
+            console.warn('⚠️ User role not found, showing no links');
+            return false;
+        }
+        
+        const userRole = user.role.toUpperCase();
+        const hasAccess = link.roles.includes(userRole);
+        
+        if (!hasAccess) {
+            console.log(`🚫 Hiding "${link.text}" from ${userRole}`);
+        }
+        
+        return hasAccess;
+    });
+
+    console.log('✅ Visible Navigation Links:', navLinks.map(l => l.text));
 
     // Effect to open the parent menu if a child link is active on page load
     useEffect(() => {

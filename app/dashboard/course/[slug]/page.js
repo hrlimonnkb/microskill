@@ -7,7 +7,8 @@ import Link from 'next/link';
 import Hls from 'hls.js';
 import {
     PlayCircle, Lock, ChevronLeft, ChevronRight, BookOpen,
-    FileText, Bookmark, ThumbsUp, ThumbsDown, Menu, X, Settings
+    FileText, Bookmark, ThumbsUp, ThumbsDown, Menu, X, Settings,
+    CheckCircle
 } from 'lucide-react';
 
 const API_BASE_URL = 'http://localhost:3001';
@@ -28,13 +29,29 @@ export default function CoursePlayerPage() {
     const [availableQualities, setAvailableQualities] = useState([]);
     const [currentQuality, setCurrentQuality] = useState('auto');
     const [showQualityMenu, setShowQualityMenu] = useState(false);
+    
+    // ✅ Progress & Notes State
+    const [lessonCompleted, setLessonCompleted] = useState(false);
+    const [courseProgress, setCourseProgress] = useState(null);
+    const [savedNotes, setSavedNotes] = useState([]);
+    const [savingNote, setSavingNote] = useState(false);
+    
+    // ✅ Modal State
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [modalMessage, setModalMessage] = useState('');
 
     const videoRef = useRef(null);
     const hlsRef = useRef(null);
-
-    useEffect(() => {
+useEffect(() => {
+        console.log('🎯 Component mounted, fetching course data...');
         fetchCourseData();
     }, [slug]);
+   useEffect(() => {
+        if (currentLesson && course) {
+            fetchLessonProgress();
+            fetchLessonNotes();
+        }
+    }, [currentLesson]);
 
     useEffect(() => {
         if (currentLesson) {
@@ -47,30 +64,58 @@ export default function CoursePlayerPage() {
         };
     }, [currentLesson]);
 
-    const fetchCourseData = async () => {
+ const fetchCourseData = async () => {
         try {
+            console.log('\n=== 🎬 Fetching Course Data ===');
+            console.log('Slug:', slug);
+            console.log('API URL:', `${API_BASE_URL}/api/courses/${slug}`);
+            
             const token = localStorage.getItem('authToken');
+            console.log('Token exists:', !!token);
+            
             if (!token) {
+                console.error('❌ No token found, redirecting to login');
                 router.push('/login');
                 return;
             }
 
+            console.log('📡 Calling API...');
+            
             const response = await fetch(`${API_BASE_URL}/api/courses/${slug}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
-            if (!response.ok) throw new Error('কোর্স লোড করতে সমস্যা হয়েছে');
+            console.log('📥 Response Status:', response.status);
+            console.log('📥 Response OK:', response.ok);
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('❌ API Error Response:', errorText);
+                throw new Error(`কোর্স লোড করতে সমস্যা হয়েছে (Status: ${response.status})`);
+            }
 
             const data = await response.json();
+            console.log('✅ Course Data Received:', data);
+            console.log('📚 Sections:', data.sections?.length || 0);
+            console.log('📝 First Lesson:', data.sections?.[0]?.lessons?.[0]?.title || 'No lessons');
+            
             setCourse(data);
 
             if (data.sections?.[0]?.lessons?.[0]) {
+                console.log('✅ Setting first lesson:', data.sections[0].lessons[0].title);
                 setCurrentLesson(data.sections[0].lessons[0]);
+            } else {
+                console.warn('⚠️ No lessons found in course');
             }
 
             setLoading(false);
+            console.log('✅ Course loaded successfully');
+            
         } catch (error) {
-            console.error('Error fetching course:', error);
+            console.error('❌ Error fetching course:', error);
+            console.error('❌ Error details:', error.message);
+            setModalMessage(`❌ কোর্স লোড করতে সমস্যা: ${error.message}`);
+                setShowSuccessModal(true);
             setLoading(false);
         }
     };
@@ -151,7 +196,8 @@ export default function CoursePlayerPage() {
 
         } catch (error) {
             console.error('Error loading video:', error);
-            alert(`ভিডিও লোড করতে সমস্যা: ${error.message}`);
+            setModalMessage(`❌ ভিডিও লোড করতে সমস্যা: ${error.message}`);
+            setShowSuccessModal(true);
         }
     };
 
@@ -197,20 +243,166 @@ export default function CoursePlayerPage() {
         }
     };
 
-    const saveNote = () => {
+// ✅ Fetch Lesson Progress
+    const fetchLessonProgress = async () => {
+        try {
+            const token = localStorage.getItem('authToken');
+            const response = await fetch(`${API_BASE_URL}/api/progress/lesson/${currentLesson.id}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                setLessonCompleted(data.progress?.completed || false);
+                console.log('📊 Lesson progress loaded:', data.progress);
+            }
+        } catch (error) {
+            console.error('Error fetching lesson progress:', error);
+        }
+    };
+
+    // ✅ Fetch Lesson Notes
+    const fetchLessonNotes = async () => {
+        try {
+            const token = localStorage.getItem('authToken');
+            const response = await fetch(`${API_BASE_URL}/api/notes/lesson/${currentLesson.id}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                setSavedNotes(data.notes || []);
+                console.log('📝 Loaded notes:', data.notes.length);
+            }
+        } catch (error) {
+            console.error('Error fetching notes:', error);
+        }
+    };
+
+    // ✅ Mark Lesson Complete
+    const markLessonComplete = async () => {
+        try {
+            const token = localStorage.getItem('authToken');
+            
+            console.log('📝 Marking lesson as complete...');
+            
+            const response = await fetch(`${API_BASE_URL}/api/progress/lesson/complete`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    lessonId: currentLesson.id,
+                    courseId: course.id,
+                    watchedDuration: Math.floor(videoRef.current?.currentTime || 0)
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to mark lesson complete');
+            }
+
+            const data = await response.json();
+            
+            setLessonCompleted(true);
+            setCourseProgress(data.courseProgress);
+            
+            console.log('✅ Lesson completed!', data.courseProgress);
+            
+            // ✅ Show success modal instead of alert
+            setModalMessage(`✅ Lesson সম্পন্ন হয়েছে! কোর্স প্রোগ্রেস: ${data.courseProgress.progress}%`);
+            setShowSuccessModal(true);
+
+        } catch (error) {
+            console.error('❌ Error marking lesson complete:', error);
+            setModalMessage('❌ Lesson complete করতে সমস্যা হয়েছে');
+            setShowSuccessModal(true);
+        }
+    };
+
+    // ✅ Save Note
+    const saveNote = async () => {
         if (!noteTitle.trim() || !noteContent.trim()) {
             alert('নোট টাইটেল এবং কন্টেন্ট লিখুন');
             return;
         }
 
-        console.log('Saving note:', { noteTitle, noteContent, lessonId: currentLesson.id });
-        
-        alert('✅ নোট সেভ হয়েছে!');
-        setNoteTitle('');
-        setNoteContent('');
+        setSavingNote(true);
+
+        try {
+            const token = localStorage.getItem('authToken');
+            
+            console.log('💾 Saving note...');
+            
+            const response = await fetch(`${API_BASE_URL}/api/notes/create`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    lessonId: currentLesson.id,
+                    courseId: course.id,
+                    title: noteTitle,
+                    content: noteContent,
+                    timestamp: Math.floor(videoRef.current?.currentTime || 0)
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to save note');
+            }
+
+            const data = await response.json();
+            
+            console.log('✅ Note saved!', data.note);
+            
+            // ✅ Show success modal
+            setModalMessage('✅ নোট সফলভাবে সেভ হয়েছে!');
+            setShowSuccessModal(true);
+            
+            // Clear form
+            setNoteTitle('');
+            setNoteContent('');
+            
+            // Refresh notes list
+            fetchLessonNotes();
+
+        } catch (error) {
+            console.error('❌ Error saving note:', error);
+            setModalMessage('❌ নোট সেভ করতে সমস্যা হয়েছে');
+            setShowSuccessModal(true);
+        } finally {
+            setSavingNote(false);
+        }
     };
 
-    if (loading) {
+    // ✅ Delete Note
+    const deleteNote = async (noteId) => {
+        // ✅ Simple confirm - এটা ব্রাউজার এর built-in, ঠিক কাজ করে
+        if (!window.confirm('এই নোটটি ডিলিট করতে চান?')) return;
+
+        try {
+            const token = localStorage.getItem('authToken');
+            
+            const response = await fetch(`${API_BASE_URL}/api/notes/${noteId}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (response.ok) {
+                setModalMessage('✅ নোট ডিলিট হয়েছে');
+                setShowSuccessModal(true);
+                fetchLessonNotes();
+            }
+        } catch (error) {
+            console.error('Error deleting note:', error);
+            setModalMessage('❌ নোট ডিলিট করতে সমস্যা হয়েছে');
+            setShowSuccessModal(true);
+        }
+    };
+  if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-white">
                 <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-[#f97316]"></div>
@@ -375,18 +567,35 @@ export default function CoursePlayerPage() {
                         </div>
 
                         {/* Custom Controls Bar */}
-                        <div className="bg-black border-t border-gray-800 px-6 py-3 flex items-center justify-center gap-3">
+                      {/* Custom Controls Bar */}
+                        <div className="bg-black border-t border-gray-800 px-6 py-3 flex items-center justify-between gap-3">
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={handlePrevious}
+                                    className="px-6 py-2 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-semibold rounded-md transition-all flex items-center gap-2 shadow-lg"
+                                >
+                                    Previous
+                                </button>
+                                <button
+                                    onClick={handleNext}
+                                    className="px-6 py-2 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-semibold rounded-md transition-all flex items-center gap-2 shadow-lg"
+                                >
+                                    Next
+                                </button>
+                            </div>
+                            
+                            {/* ✅ Mark Complete Button */}
                             <button
-                                onClick={handlePrevious}
-                                className="px-6 py-2 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-semibold rounded-md transition-all flex items-center gap-2 shadow-lg"
+                                onClick={markLessonComplete}
+                                disabled={lessonCompleted}
+                                className={`px-6 py-2 font-semibold rounded-md transition-all flex items-center gap-2 shadow-lg ${
+                                    lessonCompleted
+                                        ? 'bg-green-600 text-white cursor-not-allowed'
+                                        : 'bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white'
+                                }`}
                             >
-                                Previous
-                            </button>
-                            <button
-                                onClick={handleNext}
-                                className="px-6 py-2 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-semibold rounded-md transition-all flex items-center gap-2 shadow-lg"
-                            >
-                                Next
+                                <CheckCircle size={18} />
+                                {lessonCompleted ? '✓ সম্পন্ন হয়েছে' : 'সম্পন্ন করুন'}
                             </button>
                         </div>
                     </div>
@@ -428,32 +637,84 @@ export default function CoursePlayerPage() {
 
                         {/* Tab Content */}
                         <div className="p-6 overflow-y-auto flex-1">
-                            {activeTab === 'notes' && (
+                           {activeTab === 'notes' && (
                                 <div className="max-w-4xl mx-auto">
-                                    <h2 className="text-xl font-semibold mb-6 text-gray-900">Write Something Amazing...</h2>
-                                    
-                                    <input
-                                        type="text"
-                                        placeholder="Note Title"
-                                        value={noteTitle}
-                                        onChange={(e) => setNoteTitle(e.target.value)}
-                                        className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg mb-4 focus:outline-none focus:border-[#f97316] focus:ring-2 focus:ring-[#f97316]/20 text-gray-900"
-                                    />
+                                    {/* ✅ New Note Form */}
+                                    <div className="bg-white border-2 border-gray-200 rounded-xl p-6 mb-6">
+                                        <h2 className="text-xl font-semibold mb-4 text-gray-900">নতুন নোট লিখুন</h2>
+                                        
+                                        <input
+                                            type="text"
+                                            placeholder="নোট টাইটেল"
+                                            value={noteTitle}
+                                            onChange={(e) => setNoteTitle(e.target.value)}
+                                            className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg mb-4 focus:outline-none focus:border-[#f97316] focus:ring-2 focus:ring-[#f97316]/20 text-gray-900"
+                                        />
 
-                                    <textarea
-                                        placeholder="Write Something Amazing..."
-                                        value={noteContent}
-                                        onChange={(e) => setNoteContent(e.target.value)}
-                                        className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg h-64 resize-none focus:outline-none focus:border-[#f97316] focus:ring-2 focus:ring-[#f97316]/20 mb-4 text-gray-900"
-                                    />
+                                        <textarea
+                                            placeholder="আপনার নোট লিখুন..."
+                                            value={noteContent}
+                                            onChange={(e) => setNoteContent(e.target.value)}
+                                            className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg h-40 resize-none focus:outline-none focus:border-[#f97316] focus:ring-2 focus:ring-[#f97316]/20 mb-4 text-gray-900"
+                                        />
 
-                                    <div className="flex gap-3">
                                         <button
                                             onClick={saveNote}
-                                            className="px-6 py-3 bg-gradient-to-r from-[#f97316] to-[#ea670c] text-white font-semibold rounded-lg hover:shadow-lg transition"
+                                            disabled={savingNote}
+                                            className="px-6 py-3 bg-gradient-to-r from-[#f97316] to-[#ea670c] text-white font-semibold rounded-lg hover:shadow-lg transition disabled:opacity-50"
                                         >
-                                            Preview & Save
+                                            {savingNote ? 'সেভ হচ্ছে...' : '💾 নোট সেভ করুন'}
                                         </button>
+                                    </div>
+
+                                    {/* ✅ Saved Notes List */}
+                                    <div>
+                                        <h3 className="text-lg font-semibold mb-4 text-gray-900">
+                                            সেভ করা নোটসমূহ ({savedNotes.length})
+                                        </h3>
+                                        
+                                        {savedNotes.length === 0 ? (
+                                            <div className="text-center py-12 bg-gray-50 rounded-xl">
+                                                <FileText size={48} className="mx-auto text-gray-300 mb-3" />
+                                                <p className="text-gray-500">এখনও কোনো নোট যোগ করা হয়নি</p>
+                                            </div>
+                                        ) : (
+                                            <div className="space-y-4">
+                                                {savedNotes.map((note) => (
+                                                    <div
+                                                        key={note.id}
+                                                        className="bg-white border-2 border-gray-200 rounded-xl p-5 hover:border-[#f97316] transition"
+                                                    >
+                                                        <div className="flex items-start justify-between mb-2">
+                                                            <h4 className="text-lg font-semibold text-gray-900">
+                                                                {note.title}
+                                                            </h4>
+                                                            <button
+                                                                onClick={() => deleteNote(note.id)}
+                                                                className="text-red-500 hover:text-red-700 transition"
+                                                            >
+                                                                <X size={20} />
+                                                            </button>
+                                                        </div>
+                                                        
+                                                        <p className="text-gray-700 whitespace-pre-wrap mb-3">
+                                                            {note.content}
+                                                        </p>
+                                                        
+                                                        <div className="flex items-center gap-4 text-sm text-gray-500">
+                                                            <span>
+                                                                📅 {new Date(note.createdAt).toLocaleDateString('bn-BD')}
+                                                            </span>
+                                                            {note.timestamp && (
+                                                                <span>
+                                                                    ⏱️ {Math.floor(note.timestamp / 60)}:{String(note.timestamp % 60).padStart(2, '0')}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             )}
@@ -480,6 +741,40 @@ export default function CoursePlayerPage() {
                     </div>
                 </div>
             </div>
+     {/* ✅ Success Modal */}
+            {showSuccessModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
+                    <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4 animate-bounce-in">
+                        <div className="text-center">
+                            {/* Icon */}
+                            <div className="mb-4">
+                                {modalMessage.includes('✅') ? (
+                                    <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+                                        <CheckCircle size={40} className="text-green-600" />
+                                    </div>
+                                ) : (
+                                    <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
+                                        <X size={40} className="text-red-600" />
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Message */}
+                            <p className="text-lg font-semibold text-gray-800 mb-6">
+                                {modalMessage}
+                            </p>
+
+                            {/* Close Button */}
+                            <button
+                                onClick={() => setShowSuccessModal(false)}
+                                className="w-full px-6 py-3 bg-gradient-to-r from-[#f97316] to-[#ea670c] text-white font-semibold rounded-lg hover:shadow-xl transition-all"
+                            >
+                                ঠিক আছে
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
