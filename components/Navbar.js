@@ -64,16 +64,17 @@ const Navbar = () => {
                     >
                         <span className="sr-only">Open user menu</span>
                         {user.image ? (
-                            <img
-                                className="h-9 w-9 rounded-full"
-                                src={`${IMG_URL}/${user.image}`}
-                                alt={user.name || 'User'}
-                                width={36}
-                                height={36}
-                            />
-                        ) : (
-                            <UserCircle className="h-9 w-9 text-gray-600" />
-                        )}
+                                                <Image 
+                                                    className="h-10 w-10 rounded-full" 
+                                                    src={user.image} 
+                                                    alt={user.name || 'User'} 
+                                                    width={40} 
+                                                    height={40}
+                                                    unoptimized={user.image.startsWith('http://localhost')}
+                                                />
+                                            ) : (
+                                                <UserCircle className="h-10 w-10 text-gray-600" />
+                                            )}
                         <span className="hidden sm:inline">{user.name}</span>
                     </button>
 

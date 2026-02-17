@@ -3,28 +3,37 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ShoppingBag, Home, BookOpen, BarChart2, Settings, X, Users, ChevronDown, User2 } from 'lucide-react';
+import { ShoppingBag, Home, BookOpen, BarChart2, Settings, X, Users, ChevronDown, User2, UserCircle, UserPen } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
-
 
 const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
     const pathname = usePathname();
     const [openMenus, setOpenMenus] = useState({});
- const { user } = useAuth();
- console.log("User in Sidebar:", user);
- 
-       const allNavLinks = [
+    const { user } = useAuth();
+
+    const allNavLinks = [
         { 
             href: "/dashboard", 
             icon: Home, 
             text: "ড্যাশবোর্ড",
-            roles: ['ADMIN', 'TEACHER', 'STUDENT'] // All roles can see dashboard
+            roles: ['ADMIN', 'TEACHER', 'STUDENT'] 
+        },
+        // --- Teacher Profile Section (Only for Teachers) ---
+        {
+            id: 'teacher-profile',
+            icon: UserCircle,
+            text: "আমার প্রোফাইল",
+            roles: ['TEACHER'],
+            children: [
+                { href: "/dashboard/teacher/profile", text: "প্রোফাইল দেখুন" },
+                { href: "/dashboard/teacher/edit-profile", text: "প্রোফাইল এডিট করুন" },
+            ]
         },
         {
             id: 'courses',
             icon: BookOpen,
             text: "কোর্স",
-            roles: ['ADMIN', 'TEACHER'], // Only Admin and Teacher
+            roles: ['ADMIN', 'TEACHER'],
             children: [
                 { href: "/dashboard/course/add-course", text: "কোর্স যোগ করুন" },
                 { href: "/dashboard/course/all-course", text: "সকল কোর্স" },
@@ -33,8 +42,8 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
         {
             id: 'teachers',
             icon: Users,
-            text: "শিক্ষক",
-            roles: ['ADMIN'], // Only Admin
+            text: "শিক্ষক ম্যানেজমেন্ট",
+            roles: ['ADMIN'],
             children: [
                 { href: "/dashboard/teacher/add-teacher", text: "শিক্ষক যোগ করুন" },
                 { href: "/dashboard/teacher/teachers", text: "সকল শিক্ষক" },
@@ -44,42 +53,27 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
             href: "/dashboard/users/all-user", 
             icon: User2, 
             text: "স্টুডেন্টস",
-            roles: ['ADMIN'] // Only Admin
+            roles: ['ADMIN'] 
         },
         { 
             href: "/dashboard/analytics", 
             icon: BarChart2, 
             text: "অ্যানালিটিক্স",
-            roles: ['ADMIN'] // Only Admin
+            roles: ['ADMIN'] 
         },
         { 
             href: "/dashboard/settings", 
             icon: Settings, 
             text: "সেটিংস",
-            roles: ['ADMIN', 'TEACHER', 'STUDENT'] // All roles
+            roles: ['ADMIN', 'TEACHER', 'STUDENT'] 
         },
     ];
 
-    // ✅ Filter navigation links based on user role
     const navLinks = allNavLinks.filter(link => {
-        if (!user || !user.role) {
-            console.warn('⚠️ User role not found, showing no links');
-            return false;
-        }
-        
-        const userRole = user.role.toUpperCase();
-        const hasAccess = link.roles.includes(userRole);
-        
-        if (!hasAccess) {
-            console.log(`🚫 Hiding "${link.text}" from ${userRole}`);
-        }
-        
-        return hasAccess;
+        if (!user || !user.role) return false;
+        return link.roles.includes(user.role.toUpperCase());
     });
 
-    console.log('✅ Visible Navigation Links:', navLinks.map(l => l.text));
-
-    // Effect to open the parent menu if a child link is active on page load
     useEffect(() => {
         const activeMenu = navLinks.find(link => 
             link.children?.some(child => pathname.startsWith(child.href))
@@ -94,10 +88,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
     };
 
     const NavItem = ({ link }) => {
-        // A parent is active if the pathname starts with the parent's base path
         const isParentActive = link.children?.some(child => pathname.startsWith(child.href));
-
-        // A child link is active if the pathname exactly matches its href
         const isChildActive = (href) => pathname === href;
 
         if (!link.children) {
@@ -106,9 +97,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
                 <Link
                     href={link.href}
                     className={`flex items-center p-3 my-1 rounded-lg transition-colors ${
-                        isActive
-                            ? 'bg-[#ea670c] text-white shadow-lg'
-                            : 'text-gray-300 hover:bg-indigo-900 hover:text-white'
+                        isActive ? 'bg-[#ea670c] text-white shadow-lg' : 'text-gray-300 hover:bg-indigo-900 hover:text-white'
                     }`}
                     onClick={() => setIsSidebarOpen(false)}
                 >
@@ -118,40 +107,29 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
             );
         }
 
-        // If it's a dropdown menu
         const isOpen = openMenus[link.id];
         return (
             <div>
                 <button
                     onClick={() => handleMenuToggle(link.id)}
                     className={`w-full flex items-center justify-between p-3 my-1 rounded-lg transition-colors ${
-                        isParentActive
-                            ? 'bg-indigo-800 text-white'
-                            : 'text-gray-300 hover:bg-indigo-900 hover:text-white'
+                        isParentActive ? 'bg-indigo-800 text-white' : 'text-gray-300 hover:bg-indigo-900 hover:text-white'
                     }`}
                 >
                     <div className="flex items-center">
                         <link.icon className="h-5 w-5 mr-3 flex-shrink-0" />
                         <span className="font-medium">{link.text}</span>
                     </div>
-                    <ChevronDown
-                        className={`h-5 w-5 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
-                    />
+                    <ChevronDown className={`h-5 w-5 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
                 </button>
-                <div
-                    className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                        isOpen ? 'max-h-40' : 'max-h-0'
-                    }`}
-                >
+                <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'max-h-60' : 'max-h-0'}`}>
                     <div className="pl-8 pt-1 border-l-2 border-gray-700 ml-5">
                         {link.children.map(child => (
                             <Link
                                 key={child.href}
                                 href={child.href}
                                 className={`flex items-center p-2 my-1 rounded-md text-sm transition-colors ${
-                                    isChildActive(child.href)
-                                        ? 'text-white font-semibold'
-                                        : 'text-gray-400 hover:text-white'
+                                    isChildActive(child.href) ? 'text-white font-semibold' : 'text-gray-400 hover:text-white'
                                 }`}
                                 onClick={() => setIsSidebarOpen(false)}
                             >
@@ -166,40 +144,20 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
 
     return (
         <>
-            {/* Mobile Overlay */}
-            <div
-                className={`fixed inset-0 bg-black bg-opacity-50 z-30 md:hidden transition-opacity duration-300 ${isSidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
-                onClick={() => setIsSidebarOpen(false)}
-            ></div>
-
-            {/* Sidebar */}
-            <aside
-                className={`fixed top-0 left-0 h-full w-64 bg-gray-900 text-white flex flex-col z-40 md:relative md:translate-x-0 transition-transform duration-300 ease-in-out ${
-                    isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
-                }`}
-            >
-                {/* Logo and Close Button */}
+            <div className={`fixed inset-0 bg-black bg-opacity-50 z-30 md:hidden transition-opacity ${isSidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={() => setIsSidebarOpen(false)}></div>
+            <aside className={`fixed top-0 left-0 h-full w-64 bg-gray-900 text-white flex flex-col z-40 md:relative md:translate-x-0 transition-transform duration-300 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
                 <div className="flex items-center justify-between p-4 border-b border-gray-700 h-20">
                     <Link href="/" className="flex items-center space-x-2">
                         <ShoppingBag className="text-[#fb8a3c]" size={32} />
-                        <span className="font-bold text-2xl text-white">ই-লার্ণ</span>
+                        <span className="font-bold text-2xl">ই-লার্ণ</span>
                     </Link>
                     <button className="md:hidden text-gray-400 hover:text-white" onClick={() => setIsSidebarOpen(false)}>
                         <X size={24} />
                     </button>
                 </div>
-
-                {/* Navigation Links */}
-                <nav className="flex-1 px-3 py-4">
-                    {navLinks.map(link => (
-                        <NavItem key={link.id || link.href} link={link} />
-                    ))}
+                <nav className="flex-1 px-3 py-4 overflow-y-auto">
+                    {navLinks.map(link => <NavItem key={link.id || link.href} link={link} />)}
                 </nav>
-
-                {/* Footer Section */}
-                <div className="p-4 border-t border-gray-700">
-                    <p className="text-xs text-gray-500">&copy; {new Date().getFullYear()} ই-লার্ণ। সর্বস্বত্ব সংরক্ষিত।</p>
-                </div>
             </aside>
         </>
     );

@@ -368,7 +368,7 @@ export default function DashboardPage() {
                 <div className="flex items-center justify-between mb-6">
                     <h2 className="text-2xl font-bold text-gray-800">আমার কোর্সসমূহ</h2>
                     <div className="flex gap-3">
-                        <Link href="/teacher/courses/create">
+                        <Link href="/dashboard/course/add-course">
                             <span className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#f97316] to-[#ea670c] text-white font-semibold rounded-lg hover:shadow-xl transition-all cursor-pointer">
                                 <Plus size={20} />
                                 নতুন কোর্স
@@ -391,7 +391,7 @@ export default function DashboardPage() {
                         <p className="text-gray-600 mb-6">
                             আপনার প্রথম কোর্স তৈরি করুন এবং শেখানো শুরু করুন
                         </p>
-                        <Link href="/teacher/courses/create">
+                        <Link href="/dashboard/course/add-course">
                             <span className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#f97316] to-[#ea670c] text-white font-semibold rounded-lg hover:shadow-xl transition-all cursor-pointer">
                                 <Plus size={20} />
                                 কোর্স তৈরি করুন
@@ -434,7 +434,7 @@ export default function DashboardPage() {
                                         </span>
                                     </div>
                                     <div className="flex gap-2">
-                                        <Link href={`/course/${course.slug}`} className="flex-1">
+                                        <Link href={`/dashboard/course/${course.slug}`} className="flex-1">
                                             <button className="w-full flex items-center justify-center gap-2 px-3 py-2 border-2 border-gray-300 text-gray-700 font-semibold rounded-lg hover:border-[#f97316] hover:text-[#f97316] transition-colors">
                                                 <Eye size={16} />
                                                 দেখুন
@@ -455,7 +455,7 @@ export default function DashboardPage() {
 
             {/* Quick Actions */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <Link href="/teacher/courses/create">
+                <Link href="/dashboard/course/add-course">
                     <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-6 rounded-xl shadow-lg text-white hover:shadow-2xl transition-all cursor-pointer">
                         <Plus size={32} className="mb-3" />
                         <h3 className="text-xl font-semibold mb-2">নতুন কোর্স তৈরি করুন</h3>
