@@ -3,11 +3,26 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import { FiPlus, FiSearch, FiTrash2 } from 'react-icons/fi';
-import { toastSuccess, toastError } from '@/lib/toast';
-import PageHeading from '@/app/components/ui/PageHeading';
-import { CategoryTable } from '@/app/(dashboard)/components/ui/CategoryTable';
-import { Modal } from '@/app/components/ui/Modal';
-import { Pagination } from '@/app/components/ui/Pagination';
+import toast from 'react-hot-toast';
+
+import PageHeading from '@/components/ui/PageHeading';
+import { CategoryTable } from '@/components/ui/Categorytable';
+import { Modal } from '@/components/ui/Modal';
+import { Pagination } from '@/components/ui/Pagination';
+
+const API_BASE = 'http://localhost:8006';
+
+function authFetch(path, options = {}) {
+  const token = localStorage.getItem('token');
+  return fetch(`${API_BASE}${path}`, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+      ...options.headers,
+    },
+  });
+}
 
 function useDebounce(value, delay) {
   const [debouncedValue, setDebouncedValue] = useState(value);
@@ -37,20 +52,19 @@ export default function BlogCategoriesPage() {
     try {
       setIsLoading(true);
       const params = new URLSearchParams({ page, limit: ITEMS_PER_PAGE, search });
-      const response = await fetch(`/api/blog/admin/categories?${params}`);
+      const response = await authFetch(`/api/categories?${params}`);
 
       if (!response.ok) throw new Error('Failed to fetch categories.');
 
       const data = await response.json();
 
       setCategories(data.categories || []);
-      // Backend returns pagination object: { page, limit, total, totalPages }
       setTotalPages(data.pagination?.totalPages || 1);
 
       console.log('CATEGORY_FETCH_SUCCESS: page', page, '| total', data.pagination?.total);
     } catch (error) {
       console.error('CATEGORY_FETCH_ERROR:', error);
-      toastError(error.message);
+      toast.error(error.message);
     } finally {
       setIsLoading(false);
     }
@@ -74,20 +88,17 @@ export default function BlogCategoriesPage() {
   const handleDeleteSelected = async (idsToDelete) => {
     try {
       setIsDeleting(true);
-      const response = await fetch('/api/blog/admin/categories', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ids: idsToDelete }),
-      });
 
-      const data = await response.json();
+      // Backend এ একটাই DELETE /:id আছে, তাই loop করে delete করো
+      await Promise.all(
+        idsToDelete.map((id) =>
+          authFetch(`/api/categories/${id}`, { method: 'DELETE' })
+        )
+      );
 
-      if (!response.ok) throw new Error(data.message || 'Failed to delete categories.');
-
-      toastSuccess(`${idsToDelete.length} category deleted successfully.`);
+      toast.success(`${idsToDelete.length} category deleted successfully.`);
       setSelectedCategoryIds([]);
 
-      // শেষ পেইজে সব delete হলে আগের পেইজে যাও
       const remaining = categories.length - idsToDelete.length;
       if (remaining === 0 && currentPage > 1) {
         setCurrentPage(prev => prev - 1);
@@ -98,7 +109,7 @@ export default function BlogCategoriesPage() {
       console.log('CATEGORY_DELETE_SUCCESS: ids', idsToDelete);
     } catch (error) {
       console.error('CATEGORY_DELETE_ERROR:', error);
-      toastError(error.message);
+      toast.error(error.message);
     } finally {
       setIsDeleting(false);
       setIsDeleteModalOpen(false);
@@ -165,8 +176,8 @@ export default function BlogCategoriesPage() {
               />
             </div>
             <Link
-              href="/dashboard/blog/categories/new"
-              className="px-4 py-2.5 flex items-center gap-2 bg-gradient-to-r from-[#0957ff] to-[#34bfff] text-sm text-white font-semibold rounded-lg shadow-sm hover:scale-105 transition-transform whitespace-nowrap"
+              href="/dashboard/blog-categories/new"
+              className="px-4 py-2.5 flex items-center gap-2 bg-gradient-to-r from-[#f97316] to-[#fb923c] text-sm text-white font-semibold rounded-lg shadow-sm hover:scale-105 transition-transform whitespace-nowrap"
             >
               <FiPlus /> Add Category
             </Link>
@@ -188,7 +199,7 @@ export default function BlogCategoriesPage() {
             <CategoryTable
               categories={categories}
               onDeleteCategory={handleDeleteCategory}
-              baseEditPath="/dashboard/blog/categories"
+              baseEditPath="/dashboard/blog-categories"
               selectedCategoryIds={selectedCategoryIds}
               onSelectOne={handleSelectOne}
               onSelectAll={handleSelectAll}
@@ -236,7 +247,9 @@ export default function BlogCategoriesPage() {
               disabled={isDeleting}
               className="px-4 py-2 text-sm font-semibold text-white bg-red-600 hover:bg-red-700 rounded-md cursor-pointer disabled:opacity-60 flex items-center gap-2"
             >
-              {isDeleting && <span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />}
+              {isDeleting && (
+                <span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              )}
               {isDeleting ? 'Deleting...' : 'Delete Selected'}
             </button>
           </div>

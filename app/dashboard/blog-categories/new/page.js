@@ -2,9 +2,11 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { toastSuccess, toastError } from '@/lib/toast';
-import { CategoryForm } from '@/app/(dashboard)/components/ui/CategoryForm';
-import PageHeading from '@/app/components/ui/PageHeading';
+import toast from 'react-hot-toast';
+import PageHeading from '@/components/ui/PageHeading';
+import { CategoryForm } from '@/components/dashboard/Post/Category/CategoryForm';
+
+const API_BASE = 'http://localhost:8006';
 
 export default function AddCategoryPage() {
   const router = useRouter();
@@ -14,10 +16,14 @@ export default function AddCategoryPage() {
     try {
       setIsSaving(true);
       console.log('CATEGORY_CREATE_ATTEMPT:', data.name);
+const token = localStorage.getItem('authToken');
 
-      const response = await fetch('/api/blog/admin/categories', {
+      const response = await fetch(`${API_BASE}/api/categories`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
         body: JSON.stringify(data),
       });
 
@@ -28,11 +34,11 @@ export default function AddCategoryPage() {
       }
 
       console.log('CATEGORY_CREATE_SUCCESS: id', responseData.category?.id);
-      toastSuccess('Category created successfully!');
-      router.push('/dashboard/blog/categories');
+      toast.success('Category created successfully!');
+      router.push('/dashboard/blog-categories');
     } catch (error) {
       console.error('CATEGORY_CREATE_ERROR:', error);
-      toastError(error.message);
+      toast.error(error.message);
     } finally {
       setIsSaving(false);
     }
@@ -41,7 +47,7 @@ export default function AddCategoryPage() {
   const breadcrumbs = [
     { label: 'Dashboard', href: '/dashboard' },
     { label: 'Blog', href: '/dashboard/blog/posts' },
-    { label: 'Categories', href: '/dashboard/blog/categories' },
+    { label: 'Categories', href: '/dashboard/blog-categories' },
     { label: 'New Category' },
   ];
 

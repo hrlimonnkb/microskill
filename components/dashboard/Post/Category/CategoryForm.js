@@ -83,7 +83,7 @@ export function CategoryForm({ onSave, initialData = null, isSaving = false }) {
             onChange={handleNameChange}
             placeholder="e.g. Technology"
             required
-            className="w-full px-4 py-2.5 rounded-lg border border-slate-300 outline-none focus:border-[#0957ff] focus:ring-1 focus:ring-[#0957ff] text-sm transition"
+            className="w-full px-4 py-2.5 rounded-lg border border-slate-300 outline-none focus:border-[#f97316] focus:ring-1 focus:ring-[#f97316] text-sm text-slate-800 transition"
           />
         </div>
 
@@ -95,7 +95,7 @@ export function CategoryForm({ onSave, initialData = null, isSaving = false }) {
             value={formData.slug}
             onChange={handleSlugChange}
             placeholder="auto-generated from name"
-            className="w-full px-4 py-2.5 rounded-lg border border-slate-300 outline-none focus:border-[#0957ff] focus:ring-1 focus:ring-[#0957ff] text-sm font-mono transition"
+            className="w-full px-4 py-2.5 rounded-lg border border-slate-300 outline-none focus:border-[#f97316] focus:ring-1 focus:ring-[#f97316] text-sm font-mono text-slate-800 transition"
           />
           <p className="text-xs text-slate-400">Name দিলে auto-generate হবে। নিজে edit করলে তাই রাখবে।</p>
         </div>
@@ -109,7 +109,7 @@ export function CategoryForm({ onSave, initialData = null, isSaving = false }) {
             onChange={handleChange}
             placeholder="Short description about this category..."
             rows={3}
-            className="w-full px-4 py-2.5 rounded-lg border border-slate-300 outline-none focus:border-[#0957ff] focus:ring-1 focus:ring-[#0957ff] text-sm resize-none transition"
+            className="w-full px-4 py-2.5 rounded-lg border border-slate-300 outline-none focus:border-[#f97316] focus:ring-1 focus:ring-[#f97316] text-sm text-slate-800 resize-none transition"
           />
         </div>
 
@@ -120,7 +120,7 @@ export function CategoryForm({ onSave, initialData = null, isSaving = false }) {
             name="status"
             value={formData.status}
             onChange={handleChange}
-            className="w-full px-4 py-2.5 rounded-lg border border-slate-300 outline-none focus:border-[#0957ff] focus:ring-1 focus:ring-[#0957ff] text-sm bg-white transition"
+            className="w-full px-4 py-2.5 rounded-lg border border-slate-300 outline-none focus:border-[#f97316] focus:ring-1 focus:ring-[#f97316] text-sm text-slate-800 bg-white transition"
           >
             <option value="DRAFT">Draft</option>
             <option value="PUBLISHED">Published</option>
@@ -142,7 +142,7 @@ export function CategoryForm({ onSave, initialData = null, isSaving = false }) {
             value={formData.metaTitle}
             onChange={handleChange}
             placeholder="SEO title for search engines"
-            className="w-full px-4 py-2.5 rounded-lg border border-slate-300 outline-none focus:border-[#0957ff] focus:ring-1 focus:ring-[#0957ff] text-sm transition"
+            className="w-full px-4 py-2.5 rounded-lg border border-slate-300 outline-none focus:border-[#f97316] focus:ring-1 focus:ring-[#f97316] text-sm text-slate-800 transition"
           />
         </div>
 
@@ -154,7 +154,7 @@ export function CategoryForm({ onSave, initialData = null, isSaving = false }) {
             onChange={handleChange}
             placeholder="SEO description for search engines"
             rows={3}
-            className="w-full px-4 py-2.5 rounded-lg border border-slate-300 outline-none focus:border-[#0957ff] focus:ring-1 focus:ring-[#0957ff] text-sm resize-none transition"
+            className="w-full px-4 py-2.5 rounded-lg border border-slate-300 outline-none focus:border-[#f97316] focus:ring-1 focus:ring-[#f97316] text-sm text-slate-800 resize-none transition"
           />
         </div>
       </div>
@@ -164,7 +164,7 @@ export function CategoryForm({ onSave, initialData = null, isSaving = false }) {
         <button
           type="submit"
           disabled={isSaving || !formData.name.trim()}
-          className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-[#0957ff] to-[#34bfff] text-white text-sm font-semibold rounded-lg shadow-sm hover:scale-105 transition-transform disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100"
+          className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-[#f97316] to-[#fb923c] text-white text-sm font-semibold rounded-lg shadow-sm hover:scale-105 transition-transform disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100"
         >
           {isSaving ? <FiLoader className="animate-spin" /> : <FiSave />}
           {isSaving ? 'Saving...' : initialData ? 'Update Category' : 'Create Category'}

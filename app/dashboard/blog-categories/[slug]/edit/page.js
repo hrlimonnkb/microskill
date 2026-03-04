@@ -2,57 +2,75 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { toastSuccess, toastError } from '@/lib/toast';
-
-import PageHeading from '@/app/components/ui/PageHeading';
+import toast from 'react-hot-toast';
+import PageHeading from '@/components/ui/PageHeading';
 import { CategoryForm } from '@/components/dashboard/Post/Category/CategoryForm';
+
+const API_BASE = 'http://localhost:8006';
+
+function authFetch(path, options = {}) {
+  const token = localStorage.getItem('authToken');
+  return fetch(`${API_BASE}${path}`, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+      ...options.headers,
+    },
+  });
+}
 
 export default function EditCategoryPage() {
   const router = useRouter();
   const params = useParams();
-  const { id } = params;
+  const { slug } = params; // URL: /categories/[slug]/edit
 
   const [category, setCategory] = useState(null);
+  const [categoryId, setCategoryId] = useState(null); // PUT এর জন্য integer id
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
+  // GET /api/categories/:slug — slug দিয়ে fetch
   useEffect(() => {
-    if (!id) return;
+    if (!slug) return;
 
     const fetchCategory = async () => {
       try {
         setIsLoading(true);
-        console.log('CATEGORY_FETCH_ATTEMPT: id', id);
+        console.log('CATEGORY_FETCH_ATTEMPT: slug', slug);
 
-        const response = await fetch(`/api/blog/admin/categories/${id}`);
+        const response = await authFetch(`/api/categories/${slug}`);
         const data = await response.json();
 
         if (!response.ok) {
           throw new Error(data.message || 'Failed to fetch category data.');
         }
 
-        // Backend returns { success, category }
-        setCategory(data.category || data);
-        console.log('CATEGORY_FETCH_SUCCESS: id', id);
+        // Backend: { success: true, category: { id, name, slug, ... } }
+        const cat = data.category;
+        setCategory(cat);
+        setCategoryId(cat.id); // integer id save — PUT এ লাগবে
+
+        console.log('CATEGORY_FETCH_SUCCESS: slug', slug, '| id', cat.id);
       } catch (error) {
         console.error('CATEGORY_FETCH_ERROR:', error);
-        toastError(error.message);
+        toast.error(error.message);
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchCategory();
-  }, [id]);
+  }, [slug]);
 
+  // PUT /api/categories/:id — integer id দিয়ে update
   const handleUpdateCategory = async (data) => {
     try {
       setIsSaving(true);
-      console.log('CATEGORY_UPDATE_ATTEMPT: id', id);
+      console.log('CATEGORY_UPDATE_ATTEMPT: id', categoryId);
 
-      const response = await fetch(`/api/blog/admin/categories/${id}`, {
+      const response = await authFetch(`/api/categories/${categoryId}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
 
@@ -62,12 +80,12 @@ export default function EditCategoryPage() {
         throw new Error(responseData.message || responseData.error || 'Failed to update category.');
       }
 
-      console.log('CATEGORY_UPDATE_SUCCESS: id', id);
-      toastSuccess('Category updated successfully!');
-      router.push('/dashboard/blog/categories');
+      console.log('CATEGORY_UPDATE_SUCCESS: id', categoryId);
+      toast.success('Category updated successfully!');
+      router.push('/dashboard/blog-categories');
     } catch (error) {
       console.error('CATEGORY_UPDATE_ERROR:', error);
-      toastError(error.message);
+      toast.error(error.message);
     } finally {
       setIsSaving(false);
     }
@@ -76,7 +94,7 @@ export default function EditCategoryPage() {
   const breadcrumbs = [
     { label: 'Dashboard', href: '/dashboard' },
     { label: 'Blog', href: '/dashboard/blog/posts' },
-    { label: 'Categories', href: '/dashboard/blog/categories' },
+    { label: 'Categories', href: '/dashboard/blog-categories' },
     { label: 'Edit Category' },
   ];
 
