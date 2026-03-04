@@ -7,199 +7,178 @@ import Hls from 'hls.js';
 export default function VideoModal({ isOpen, playbackUrl, onClose, userEmail }) {
   const videoRef = useRef(null);
   const hlsRef = useRef(null);
+  const gumletInsightsRef = useRef(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Gumlet Insights Property ID (আপনার ড্যাশবোর্ড থেকে এটি পরিবর্তন করুন)
+  const GUMLET_PROPERTY_ID = 'G-8YENsg'; 
+
   useEffect(() => {
-    if (!isOpen || !videoRef.current || !playbackUrl) return;
+    if (!isOpen || !playbackUrl) return;
 
-    console.log('🎬 HLS Player Initializing...');
-    console.log('   Playback URL:', playbackUrl);
+    // ১. Gumlet Insights SDK ডাইনামিকভাবে লোড করা
+    const loadGumletSDK = () => {
+      return new Promise((resolve) => {
+        if (window.gumlet) {
+          resolve(window.gumlet);
+          return;
+        }
+        const script = document.createElement('script');
+        script.src = "https://cdn.gumlytics.com/insights/1.0/gumlet-insights.min.js";
+        script.async = true;
+        script.onload = () => resolve(window.gumlet);
+        document.head.appendChild(script);
+      });
+    };
 
-    setLoading(true);
-    setError(null);
+    const initializePlayer = async () => {
+      setLoading(true);
+      setError(null);
 
-    const video = videoRef.current;
+      // SDK লোড হওয়া পর্যন্ত অপেক্ষা
+      const gumlet = await loadGumletSDK();
 
-    const playVideo = () => {
-      // ✅ hls.js supported browsers (Chrome, Firefox, Edge)
+      // ২. Gumlet Iframe Mode (যদি URL এ gumlet.io থাকে)
+      if (playbackUrl.includes('play.gumlet.io') || playbackUrl.includes('gumlet.com')) {
+        console.log('🎬 Gumlet Iframe Mode Active');
+        return; 
+      }
+
+      // ৩. HLS.js Player Logic (ডাইরেক্ট .m3u8 ফাইলের জন্য)
+      if (!videoRef.current) return;
+      const video = videoRef.current;
+
       if (Hls.isSupported()) {
-        console.log('✅ hls.js is supported');
-        
         const hls = new Hls({
-          debug: false,
           enableWorker: true,
           lowLatencyMode: false,
-          backBufferLength: 90,
-          maxBufferLength: 30,
-          maxMaxBufferLength: 60,
-          manifestLoadingTimeOut: 10000,
-          manifestLoadingMaxRetry: 3,
-          levelLoadingTimeOut: 10000,
-          levelLoadingMaxRetry: 3,
-          fragLoadingTimeOut: 20000,
-          fragLoadingMaxRetry: 6,
-          // ✅ Token expire হলে auto retry
-          xhrSetup: function(xhr, url) {
-            xhr.withCredentials = false;
-          }
         });
 
         hlsRef.current = hls;
         hls.loadSource(playbackUrl);
         hls.attachMedia(video);
 
-        hls.on(Hls.Events.MANIFEST_PARSED, (event, data) => {
-          console.log('✅ Manifest parsed successfully');
-          console.log('   Available qualities:', data.levels.map(l => `${l.height}p`));
+        hls.on(Hls.Events.MANIFEST_PARSED, () => {
           setLoading(false);
-          
-          // Auto play with error handling
-          video.play()
-            .then(() => console.log('✅ Video playing'))
-            .catch((e) => {
-              console.warn('⚠️ Autoplay blocked:', e.message);
-              // Autoplay block হলে user কে click করতে বলো (optional)
-            });
-        });
+          video.play().catch(e => console.warn("Autoplay blocked"));
 
-        hls.on(Hls.Events.ERROR, (event, data) => {
-          console.error('❌ HLS Error:', {
-            type: data.type,
-            details: data.details,
-            fatal: data.fatal
-          });
+          // --- Gumlet Insights Registration ---
+          if (gumlet && gumlet.insights) {
+            const gumletConfig = {
+              property_id: GUMLET_PROPERTY_ID,
+              userEMail: userEmail || 'anonymous@user.com', // ইউজার ইমেইল ট্র্যাকিং
+              userId: userEmail || 'guest_id',
+              customVideoTitle: 'Course Lesson',
+              customPageType: 'Watch Page'
+            };
 
-          if (data.fatal) {
-            switch (data.type) {
-              case Hls.ErrorTypes.NETWORK_ERROR:
-                console.error('💥 Network error - attempting recovery');
-                hls.startLoad();
-                break;
-                
-              case Hls.ErrorTypes.MEDIA_ERROR:
-                console.error('💥 Media error - attempting recovery');
-                hls.recoverMediaError();
-                break;
-                
-              default:
-                console.error('💥 Unrecoverable error');
-                setError('ভিডিও লোড করতে সমস্যা হয়েছে। পেজ রিফ্রেশ করে আবার চেষ্টা করুন।');
-                setLoading(false);
-                hls.destroy();
-                break;
-            }
+            // ইনসাইটস ইনিশিয়ালাইজ এবং প্লেয়ার রেজিস্টার
+            gumletInsightsRef.current = gumlet.insights(gumletConfig);
+            gumletInsightsRef.current.register(hls); 
+            console.log("✅ Gumlet Insights Registered for HLS.js");
           }
         });
 
-        // Quality change detection
-        hls.on(Hls.Events.LEVEL_SWITCHED, (event, data) => {
-          console.log(`📺 Quality changed to: ${hls.levels[data.level].height}p`);
+        hls.on(Hls.Events.ERROR, (event, data) => {
+          if (data.fatal) {
+            setError('ভিডিও লোড হতে সমস্যা হয়েছে। অনুগ্রহ করে পেজ রিফ্রেশ করুন।');
+            setLoading(false);
+          }
         });
 
-      } 
-      // ✅ Safari নেটিভ HLS support
-      else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-        console.log('✅ Using native HLS (Safari)');
+      } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        // Safari Native Support
         video.src = playbackUrl;
-        
         video.addEventListener('loadedmetadata', () => {
-          console.log('✅ Metadata loaded');
           setLoading(false);
-          video.play()
-            .then(() => console.log('✅ Video playing'))
-            .catch((e) => console.warn('⚠️ Autoplay blocked:', e));
+          video.play();
         });
-        
-        video.addEventListener('error', (e) => {
-          console.error('❌ Video error:', e);
-          setError('ভিডিও লোড হয়নি। পেজ রিফ্রেশ করে আবার চেষ্টা করুন।');
-          setLoading(false);
-        });
-      } 
-      // ❌ Browser doesn't support HLS
-      else {
-        console.error('❌ HLS not supported');
-        setError('আপনার ব্রাউজারে HLS সাপোর্ট নেই। Chrome বা Safari ব্যবহার করুন।');
-        setLoading(false);
       }
     };
 
-    playVideo();
+    initializePlayer();
 
-    // ✅ Cleanup on unmount
+    // ক্লিনআপ ফাংশন
     return () => {
-      console.log('🧹 Cleaning up HLS player');
       if (hlsRef.current) {
         hlsRef.current.destroy();
         hlsRef.current = null;
       }
-      if (video) {
-        video.pause();
-        video.src = '';
-        video.load();
+      if (videoRef.current) {
+        videoRef.current.pause();
+        videoRef.current.src = '';
       }
     };
-  }, [isOpen, playbackUrl]);
+  }, [isOpen, playbackUrl, userEmail]);
 
   if (!isOpen) return null;
 
+  const isIframe = playbackUrl.includes('play.gumlet.io') || playbackUrl.includes('gumlet.com');
+
   return (
     <div 
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-sm p-2 sm:p-4" 
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-md p-2 sm:p-4" 
       onClick={onClose}
     >
       <div 
-        className="relative w-full max-w-5xl bg-black rounded-xl overflow-hidden shadow-2xl" 
+        className="relative w-full max-w-5xl bg-black rounded-2xl overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)] border border-white/10" 
         onClick={e => e.stopPropagation()}
       >
         {/* Close Button */}
         <button 
           onClick={onClose} 
-          className="absolute top-2 right-2 z-20 bg-black/50 hover:bg-red-600 text-white p-2 rounded-full transition-colors"
+          className="absolute top-3 right-3 z-[110] bg-black/40 hover:bg-red-600 text-white p-2 rounded-full transition-all duration-300"
         >
           <X size={24} />
         </button>
 
-        {/* Video Container */}
-        <div className="aspect-video bg-black relative flex items-center justify-center">
-       <video 
-            ref={videoRef} 
-            className="w-full h-full" 
-            controls 
-            playsInline
-            preload="metadata"
-          />
+        {/* Video Area */}
+        <div className="relative w-full bg-black flex items-center justify-center" style={{ aspectRatio: '16/9' }}>
+          {isIframe ? (
+            <iframe
+              // Iframe এর ক্ষেত্রে URL এ ইমেইল পাঠালে Gumlet Insights অটো ট্র্যাক করে
+              src={`${playbackUrl}${playbackUrl.includes('?') ? '&' : '?'}autoplay=1&email=${encodeURIComponent(userEmail || '')}`}
+              className="absolute inset-0 w-full h-full border-0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              onLoad={() => setLoading(false)}
+            />
+          ) : (
+            <video 
+              ref={videoRef} 
+              className="w-full h-full" 
+              controls 
+              playsInline
+              crossOrigin="anonymous"
+            />
+          )}
 
-          {/* ✅ User Email Watermark Overlay */}
+          {/* ওয়াটারমার্ক (ইউজার ইমেইল) */}
           {userEmail && (
-            <div className="absolute top-4 right-4 z-10 pointer-events-none select-none">
-              <div className="bg-black/40 text-white text-sm px-3 py-1.5 rounded-md backdrop-blur-sm font-mono shadow-lg border border-white/20">
+            <div className="absolute top-6 left-6 z-[105] pointer-events-none select-none opacity-40">
+              <div className="bg-white/10 text-white text-[10px] md:text-xs px-2 py-1 rounded border border-white/20 font-mono tracking-wider">
                 {userEmail}
               </div>
             </div>
           )}
 
-          {/* Loading Spinner */}
+          {/* Loading Loader */}
           {loading && !error && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black/60 z-10">
-              <div className="text-center">
-                <div className="w-16 h-16 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-                <p className="text-white text-sm">ভিডিও লোড হচ্ছে...</p>
-              </div>
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-black z-[108]">
+              <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mb-4" />
+              <p className="text-white/70 text-sm font-light">ভিডিও লোড হচ্ছে...</p>
             </div>
           )}
 
-          {/* Error Display */}
+          {/* Error Message */}
           {error && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black/90 text-white text-center p-6 z-10">
+            <div className="absolute inset-0 flex items-center justify-center bg-black/90 text-white text-center p-6 z-[109]">
               <div>
-                <p className="text-2xl mb-4">⚠️</p>
-                <p className="text-xl font-medium mb-2">সমস্যা হয়েছে</p>
-                <p className="text-base mb-6 max-w-md">{error}</p>
+                <p className="text-lg mb-6">{error}</p>
                 <button 
                   onClick={onClose} 
-                  className="bg-orange-600 hover:bg-orange-700 px-6 py-3 rounded-lg transition-colors font-medium"
+                  className="bg-orange-600 hover:bg-orange-700 text-white px-8 py-2 rounded-full transition-all"
                 >
                   বন্ধ করুন
                 </button>

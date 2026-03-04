@@ -5,11 +5,19 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { User, Clock, PlayCircle, Lock, ChevronDown, ChevronUp, ListChecks } from 'lucide-react';
 import VideoModal from '@/components/VideoModal';
-
-const API_BASE_URL ='https://api.microskill.com.bd';
+const iframeStyles = {
+    width: '100%',
+    height: '100%',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    border: 'none',
+    backgroundColor: 'black'
+};
+const API_BASE_URL = 'https://api.microskill.com.bd';
 
 const Skeleton = ({ className }) => <div className={`bg-gray-200 rounded-md animate-pulse ${className}`} />;
 
@@ -20,39 +28,50 @@ const FormSection = ({ title, icon, children }) => (
     </section>
 );
 
-// Helper function to parse intro video data
 const parseIntroVideo = (introVideo) => {
     if (!introVideo) return null;
-    
-    // যদি ব্যাকএন্ড থেকে সরাসরি Signed URL স্ট্রিং আসে
-    if (typeof introVideo === 'string' && introVideo.startsWith('http')) {
+
+    // যদি URL-এ সরাসরি .m3u8 বা .mpd থাকে, তবে সেটাকে embed URL-এ রূপান্তর করতে হবে আইফ্রেমের জন্য
+    if (typeof introVideo === 'string' && introVideo.includes('video.gumlet.io')) {
+        const parts = introVideo.split('/');
+        const assetId = parts[parts.length - 2]; // URL থেকে অ্যাসেট আইডি বের করা
+        if (assetId) {
+            console.log("🔄 Converting .m3u8 to Embed URL for Iframe:", assetId);
+            return `https://play.gumlet.io/embed/${assetId}`;
+        }
+    }
+
+    if (typeof introVideo === 'string' && (introVideo.startsWith('http://') || introVideo.startsWith('https://'))) {
         return introVideo;
     }
 
     try {
-        const parsed = JSON.parse(introVideo);
-        return parsed.playbackUrl || `https://video.gumlet.io/${parsed.assetId}/embed`;
-    } catch {
-        return `https://video.gumlet.io/${introVideo}/embed`;
+        const parsed = typeof introVideo === 'string' ? JSON.parse(introVideo) : introVideo;
+        return parsed.playbackUrl || `https://play.gumlet.io/embed/${parsed.assetId || introVideo}`;
+    } catch (e) {
+        return `https://play.gumlet.io/embed/${introVideo}`;
     }
 };
 
 export default function CoursePage() {
     const params = useParams();
     const slug = params?.slug;
-const [modalPlaybackUrl, setModalPlaybackUrl] = useState(null);
-const [modalLicenseUrl, setModalLicenseUrl] = useState(null);
-const [isModalOpen, setIsModalOpen] = useState(false);
-const [modalUserEmail, setModalUserEmail] = useState(null);
+    const router = useRouter();
+    const [modalPlaybackUrl, setModalPlaybackUrl] = useState(null);
+    const [modalLicenseUrl, setModalLicenseUrl] = useState(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [modalUserEmail, setModalUserEmail] = useState(null);
+    const [showIntroVideo, setShowIntroVideo] = useState(false);
     const [course, setCourse] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [introVideoUrl, setIntroVideoUrl] = useState('');
     const [openSections, setOpenSections] = useState({});
     const [modalVideoUrl, setModalVideoUrl] = useState('');
-const [isEnrolled, setIsEnrolled] = useState(false);
+    const [isEnrolled, setIsEnrolled] = useState(false);
     const [enrollmentLoading, setEnrollmentLoading] = useState(false);
-useEffect(() => {
+    const [relatedCourses, setRelatedCourses] = useState([]);
+    useEffect(() => {
         if (!slug) {
             setError('Course slug is missing');
             setLoading(false);
@@ -63,19 +82,27 @@ useEffect(() => {
             try {
                 setLoading(true);
                 const response = await fetch(`${API_BASE_URL}/api/courses/${slug}`);
-                
+
                 if (!response.ok) {
                     throw new Error('Course not found.');
                 }
-                
+
                 const data = await response.json();
                 setCourse(data);
-
+                // Fetch Related Courses
+                const relRes = await fetch(`${API_BASE_URL}/api/courses`);
+                if (relRes.ok) {
+                    const allCourses = await relRes.json();
+                    const filtered = allCourses.filter(c =>
+                        (c.category === data.category || c.instructorId === data.instructorId) && c.id !== data.id
+                    ).slice(0, 3); // সর্বোচ্চ ৩টি কোর্স দেখাবে
+                    setRelatedCourses(filtered);
+                }
                 const parsedIntroUrl = parseIntroVideo(data.introVideo);
                 if (parsedIntroUrl) {
                     setIntroVideoUrl(parsedIntroUrl);
                 }
-                
+                console.log('Intro Video URL parsed:', parsedIntroUrl); // ডিবাগ: URL চেক করো, Gumlet embed কিনা দেখো
                 if (data.sections?.[0]) {
                     setOpenSections({ [data.sections[0].id]: true });
                 }
@@ -95,7 +122,7 @@ useEffect(() => {
     }, [slug]);
 
     // ✅ Check if user is enrolled
-  // ✅ Check if user is enrolled
+    // ✅ Check if user is enrolled
     const checkEnrollmentStatus = async (courseId) => {
         try {
             const token = localStorage.getItem('authToken');
@@ -127,104 +154,98 @@ useEffect(() => {
     };
 
     // ✅ Enroll in course
-  // ✅ Enroll in course
     const handleEnroll = async () => {
         try {
             const token = localStorage.getItem('authToken');
-            
+
             console.log('🔐 Enrolling with token:', token ? 'Token exists' : 'No token');
-            
+
             if (!token) {
-                alert('প্রথমে লগইন করুন');
-                // TODO: Redirect to login page
-                window.location.href = '/login'; // অথবা আপনার login page route
+                console.log('⚠️ Not logged in - redirecting to login');
+                window.location.href = '/login';
                 return;
             }
 
-            setEnrollmentLoading(true);
-            console.log('📤 Sending enroll request to:', `${API_BASE_URL}/api/courses/enroll/${course.id}`);
-
-            const res = await fetch(`${API_BASE_URL}/api/courses/enroll/${course.id}`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            console.log('📥 Enroll response status:', res.status);
-
-            const data = await res.json();
-
-            if (res.ok && data.success) {
-                setIsEnrolled(true);
-                alert(`✅ ${data.message}`);
-            } else if (data.requiresPayment) {
-                // TODO: Redirect to payment page
-                alert(`এই কোর্সটি ৳${course.price} টাকা। পেমেন্ট করুন।`);
-            } else {
-                alert(data.message || 'এনরোল করতে সমস্যা হয়েছে');
-            }
+            // ✅ Checkout page এ redirect করো
+            console.log('🛒 Redirecting to checkout for course:', course.slug);
+            router.push(`/checkout/${course.slug}`);
+            return;
 
         } catch (err) {
             console.error('Enroll error:', err);
             alert('এনরোল করতে সমস্যা হয়েছে');
-        } finally {
-            setEnrollmentLoading(false);
         }
     };
 
-const handleLessonSelect = async (lesson) => {
-    // ✅ Enrollment check করো
-    if (lesson.isLocked && !isEnrolled) {
-        alert('এই লেসনটি দেখতে কোর্সে এনরোল করুন।');
-        return;
-    }
-
-    console.log('🎬 Lesson clicked:', lesson.id, lesson.title);
-
-try {
-        const token = localStorage.getItem('authToken'); // ✅ Token নাও
-        
-        if (!token) {
-            alert('প্রথমে লগইন করুন');
+    const handleLessonSelect = async (lesson) => {
+        // ✅ Enrollment check করো
+        if (lesson.isLocked && !isEnrolled) {
+            alert('এই লেসনটি দেখতে কোর্সে এনরোল করুন।');
             return;
         }
-        
-        const res = await fetch(`${API_BASE_URL}/api/courses/get-video-url`, {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}` // ✅ Token পাঠাও
-            },
-            body: JSON.stringify({ lessonId: lesson.id })
-        });
 
-        console.log('📡 API Response status:', res.status);
+        console.log('🎬 Lesson clicked:', lesson.id, lesson.title);
 
-        if (!res.ok) {
-            const errData = await res.json().catch(() => ({ message: 'Unknown error' }));
-            console.error('❌ API Error:', errData);
-            throw new Error(errData.message || 'Failed to fetch video URL');
+        try {
+            const token = localStorage.getItem('authToken'); // ✅ Token নাও
+
+            if (!token) {
+                alert('প্রথমে লগইন করুন');
+                return;
+            }
+
+            const res = await fetch(`${API_BASE_URL}/api/courses/get-video-url`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}` // ✅ Token পাঠাও
+                },
+                body: JSON.stringify({ lessonId: lesson.id })
+            });
+
+            console.log('📡 API Response status:', res.status);
+
+            if (!res.ok) {
+                const errData = await res.json().catch(() => ({ message: 'Unknown error' }));
+                console.error('❌ API Error:', errData);
+                throw new Error(errData.message || 'Failed to fetch video URL');
+            }
+
+            const data = await res.json();
+            console.log('✅ Backend returned:', data);
+
+ // ব্যাকএন্ড থেকে playbackUrl অথবা embedUrl যেকোনো একটি এলেই সেটা গ্রহণ করবে
+const videoUrl = data.embedUrl || data.playbackUrl;
+
+if (!data.success || !videoUrl) {
+    console.error("❌ API returned missing video data:", data);
+    throw new Error('ভিডিও লিংক পাওয়া যায়নি');
+}
+
+let finalPlaybackUrl = videoUrl;
+
+// যদি সরাসরি .m3u8 লিংক আসে, সেটাকে আইফ্রেমের জন্য এমবেড লিংকে কনভার্ট করা
+if (finalPlaybackUrl.includes('video.gumlet.io')) {
+    const urlParts = finalPlaybackUrl.split('/');
+    const assetIdFromUrl = urlParts[urlParts.length - 2];
+    finalPlaybackUrl = `https://play.gumlet.io/embed/${assetIdFromUrl}`;
+} 
+// যদি শুধু আইডি আসে তবে এমবেড ফরম্যাট করা
+else if (!finalPlaybackUrl.startsWith('http')) {
+    finalPlaybackUrl = `https://play.gumlet.io/embed/${finalPlaybackUrl}`;
+}
+
+console.log("🎯 Setting Modal Playback URL:", finalPlaybackUrl);
+setModalPlaybackUrl(finalPlaybackUrl);
+setModalLicenseUrl(data.licenseUrl || null);
+            setModalUserEmail(data.userEmail || null); // ✅ User email save করো
+            setIsModalOpen(true);
+
+        } catch (err) {
+            console.error('❌ Fetch error:', err);
+            alert(`ভিডিও লোড করতে সমস্যা হয়েছে: ${err.message}`);
         }
-
-        const data = await res.json();
-        console.log('✅ Backend returned:', data);
-
-        if (!data.success || !data.playbackUrl) {
-            throw new Error('Invalid response from server');
-        }
-
-       setModalPlaybackUrl(data.playbackUrl);
-        setModalLicenseUrl(data.licenseUrl || null);
-        setModalUserEmail(data.userEmail || null); // ✅ User email save করো
-        setIsModalOpen(true);
-
-    } catch (err) {
-        console.error('❌ Fetch error:', err);
-        alert(`ভিডিও লোড করতে সমস্যা হয়েছে: ${err.message}`);
-    }
-};
+    };
 
     const closeModal = () => {
         setIsModalOpen(false);
@@ -270,7 +291,7 @@ try {
     return (
         <div className="bg-slate-50 min-h-screen">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                
+
                 {/* Breadcrumb */}
                 <nav className="text-sm text-slate-500 mb-4" aria-label="Breadcrumb">
                     <Link href="/courses" className="hover:text-[#ea670c]">কোর্সের বিবরণ</Link>
@@ -279,33 +300,72 @@ try {
                 </nav>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    
+
                     {/* Main Content */}
                     <main className="lg:col-span-2 space-y-8">
 
                         {/* Intro Video Player */}
-                        <div className="bg-black rounded-lg overflow-hidden shadow-lg aspect-video">
-                            {introVideoUrl ? (
-                                <iframe
-                                    src={introVideoUrl}
-                                    className="w-full h-full"
-                                    frameBorder="0"
-                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                    allowFullScreen
-                                    title="Course intro video"
-                                />
-                            ) : course.thumbnail ? (
-                                <img 
-                                    src={`${API_BASE_URL}/${course.thumbnail}`} 
-                                    alt={course.title} 
-                                    className="w-full h-full object-cover" 
-                                />
-                            ) : (
-                                <div className="w-full h-full flex items-center justify-center text-slate-400">
-                                    <p>No preview available</p>
-                                </div>
-                            )}
-                        </div>
+{/* Intro Video Player - Final Force Fit Fix */}
+{/* Intro Video Player - Final Solution */}
+<div className="relative w-full rounded-xl overflow-hidden bg-black shadow-2xl">
+    {/* এটা নিশ্চিত করবে ১৬:৯ রেশিও এবং কোনো গ্যাপ থাকবে না */}
+    <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden' }}>
+        {showIntroVideo && introVideoUrl ? (
+            <iframe
+                src={`${introVideoUrl}${introVideoUrl.includes('?') ? '&' : '?'}autoplay=1`}
+                style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    border: 'none',
+                }}
+                className="w-full h-full"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                title="Course intro video"
+            />
+        ) : (
+            <div
+                className="absolute inset-0 cursor-pointer group"
+                onClick={() => {
+                    if (introVideoUrl) {
+                        setShowIntroVideo(true);
+                    }
+                }}
+            >
+                {/* Thumbnail */}
+                {course.thumbnail ? (
+                    <img
+                        src={`${API_BASE_URL}/${course.thumbnail}`}
+                        alt={course.title}
+                        className="absolute inset-0 w-full h-full object-cover"
+                    />
+                ) : (
+                    <div className="absolute inset-0 bg-slate-800 flex items-center justify-center">
+                        <p className="text-slate-400">No preview available</p>
+                    </div>
+                )}
+
+                {/* Overlay & Play Button */}
+                <div className="absolute inset-0 bg-black/40 group-hover:bg-black/60 transition-all duration-300" />
+                
+                <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-white/90 flex items-center justify-center shadow-2xl transition group-hover:scale-110">
+                        <PlayCircle className="w-10 h-10 text-[#f97316]" />
+                    </div>
+                </div>
+
+                <div className="absolute bottom-4 left-0 right-0 text-center">
+                    <span className="bg-black/60 text-white text-sm px-4 py-1.5 rounded-full backdrop-blur-sm">
+                        কোর্স প্রিভিউ দেখুন
+                    </span>
+                </div>
+            </div>
+        )}
+    </div>
+</div>
 
                         {/* Course Title */}
                         <header>
@@ -315,7 +375,7 @@ try {
 
                         {/* Learning Objectives */}
                         {course.outcomes && (
-                            <FormSection title="যা শিখবেন" icon={<ListChecks className="mr-3 h-6 w-6 text-[#ea670c]"/>}>
+                            <FormSection title="যা শিখবেন" icon={<ListChecks className="mr-3 h-6 w-6 text-[#ea670c]" />}>
                                 <ul className="space-y-2">
                                     {course.outcomes.split(',').map((outcome, index) => (
                                         <li key={index} className="flex items-start">
@@ -328,12 +388,12 @@ try {
                         )}
 
                         {/* Course Syllabus */}
-                        <FormSection title="কোর্স সিলেবাস" icon={<ListChecks className="mr-3 h-6 w-6 text-[#ea670c]"/>}>
+                        <FormSection title="কোর্স সিলেবাস" icon={<ListChecks className="mr-3 h-6 w-6 text-[#ea670c]" />}>
                             {course.sections && course.sections.length > 0 ? (
                                 course.sections.map((section, sectionIndex) => (
                                     <div key={section.id} className="border-b border-slate-200 last:border-b-0">
-                                        <button 
-                                            onClick={() => toggleSection(section.id)} 
+                                        <button
+                                            onClick={() => toggleSection(section.id)}
                                             className="w-full flex justify-between items-center py-4 text-left hover:bg-slate-50 px-2 rounded"
                                             aria-expanded={openSections[section.id]}
                                         >
@@ -342,18 +402,18 @@ try {
                                             </h3>
                                             {openSections[section.id] ? <ChevronUp /> : <ChevronDown />}
                                         </button>
-                                        
+
                                         <div className={`overflow-hidden transition-all duration-300 ${openSections[section.id] ? 'max-h-[1000px]' : 'max-h-0'}`}>
                                             <ul className="pl-2 pb-4 space-y-1">
-                                               {section.lessons && section.lessons.map((lesson, lessonIndex) => {
+                                                {section.lessons && section.lessons.map((lesson, lessonIndex) => {
                                                     // ✅ Enrolled হলে সব lesson unlock, না হলে শুধু first lesson free
                                                     const isLocked = !isEnrolled && !(sectionIndex === 0 && lessonIndex === 0);
 
                                                     return (
                                                         <li key={lesson.id}>
-                                                            <button 
-                                                                onClick={() => handleLessonSelect({ ...lesson, isLocked })} 
-                                                                className="w-full text-left flex items-center justify-between p-3 rounded-md hover:bg-slate-100 disabled:opacity-60 disabled:cursor-not-allowed transition" 
+                                                            <button
+                                                                onClick={() => handleLessonSelect({ ...lesson, isLocked })}
+                                                                className="w-full text-left flex items-center justify-between p-3 rounded-md hover:bg-slate-100 disabled:opacity-60 disabled:cursor-not-allowed transition"
                                                                 disabled={isLocked}
                                                                 aria-label={`${lesson.title} ${isLocked ? '(লক করা)' : ''}`}
                                                             >
@@ -385,32 +445,79 @@ try {
                         </FormSection>
 
                         {/* Instructor Info */}
+                        {/* Instructor Info - Enhanced UI */}
                         {course.instructor && (
-                            <FormSection title="ইন্সট্রাক্টর সম্পর্কে" icon={<User className="mr-3 h-6 w-6 text-[#ea670c]"/>}>
-                                <div className="flex items-start gap-4">
-                                    {course.instructor.profilePhoto && (
-                                        <img 
-                                            src={`${API_BASE_URL}/${course.instructor.profilePhoto}`}
-                                            alt={course.instructor.fullName}
-                                            className="w-16 h-16 rounded-full object-cover"
-                                        />
-                                    )}
-                                    <div>
-                                        <h3 className="text-lg font-semibold text-slate-800">
-                                            {course.instructor.fullName}
-                                        </h3>
-                                        {course.instructor.shortBio && (
-                                            <p className="text-slate-600 mt-2">{course.instructor.shortBio}</p>
-                                        )}
+                            <div className="bg-white p-8 rounded-xl shadow-sm border border-slate-100 mt-8">
+                                <h2 className="text-2xl font-bold text-slate-800 mb-6">ইন্সট্রাক্টর পরিচিতি</h2>
+                                <div className="flex flex-col md:flex-row gap-6">
+                                    {/* Left: Profile Photo & Socials */}
+                                    <div className="flex flex-col items-center">
+                                        <div className="w-32 h-32 rounded-lg overflow-hidden border-2 border-slate-100 mb-3">
+                                            <img
+                                                src={`${API_BASE_URL}/${course.instructor.profilePhoto}`}
+                                                alt={course.instructor.fullName}
+                                                className="w-full h-full object-cover"
+                                            />
+                                        </div>
+                                        <div className="flex gap-3">
+                                            {/* সোশ্যাল আইকনগুলো স্ট্যাটিক রাখা হলো, ডাটাবেজে থাকলে ম্যাপ করতে পারেন */}
+                                            <div className="p-1.5 bg-blue-50 text-blue-600 rounded cursor-pointer hover:bg-blue-100 transition"><User size={18} /></div>
+                                            <div className="p-1.5 bg-emerald-50 text-emerald-600 rounded cursor-pointer hover:bg-emerald-100 transition"><PlayCircle size={18} /></div>
+                                        </div>
+                                    </div>
+
+                                    {/* Right: Info */}
+                                    <div className="flex-1">
+                                        <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                                            <h3 className="text-2xl font-bold text-slate-900">{course.instructor.fullName}</h3>
+                                        </div>
+
+                                        {/* Badges */}
+                                        <div className="flex flex-wrap gap-2 mb-4">
+                                            <span className="bg-slate-100 text-slate-700 px-3 py-1 rounded text-sm font-medium">ডিজিটাল মার্কেটিং</span>
+                                            <span className="bg-slate-100 text-slate-700 px-3 py-1 rounded text-sm font-medium">মেটা এডস</span>
+                                            <span className="bg-slate-100 text-slate-700 px-3 py-1 rounded text-sm font-medium">গুগল এডস</span>
+                                        </div>
+
+                                        <div className="space-y-3 text-slate-700 leading-relaxed">
+                                            <p className="font-semibold text-[#ea670c]">{course.instructor.shortBio}</p>
+                                            <p className="text-sm">{course.instructor.detailedBio || "প্রফেশনাল মিডিয়া স্ট্র্যাটেজি এবং প্ল্যানিং বিশেষজ্ঞ।"}</p>
+                                        </div>
                                     </div>
                                 </div>
-                            </FormSection>
+                            </div>
+                        )}
+                        {/* Related Courses Section */}
+                        {relatedCourses.length > 0 && (
+                            <section className="mt-12">
+                                <h2 className="text-2xl font-bold text-slate-800 mb-6">রিলেটেড কোর্সসমূহ</h2>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {relatedCourses.map((relCourse) => (
+                                        <Link href={`/courses/${relCourse.slug}`} key={relCourse.id} className="group">
+                                            <div className="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition">
+                                                <div className="aspect-video relative">
+                                                    <img
+                                                        src={`${API_BASE_URL}/${relCourse.thumbnail}`}
+                                                        alt={relCourse.title}
+                                                        className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+                                                    />
+                                                </div>
+                                                <div className="p-4">
+                                                    <h4 className="font-bold text-slate-800 line-clamp-1">{relCourse.title}</h4>
+                                                    <p className="text-[#ea670c] font-bold mt-2">৳ {relCourse.price}</p>
+                                                </div>
+                                            </div>
+                                        </Link>
+                                    ))}
+                                </div>
+                            </section>
                         )}
                     </main>
 
                     {/* Sidebar */}
-                    <aside className="lg:col-span-1">
-                        <div className="bg-white rounded-lg shadow-lg p-6 sticky top-8">
+                    <aside className="lg:col-span-1 relative">
+                        <div className="bg-white rounded-xl shadow-xl border border-slate-100 p-6 sticky top-24 z-10">
+
                             <div className="mb-6">
                                 <p className="text-3xl font-bold text-slate-900 mb-2">
                                     {course.isFree ? 'ফ্রি কোর্স' : `৳ ${course.price}`}
@@ -426,7 +533,7 @@ try {
                                     <p className="text-sm mt-1">সব লেসন এখন আনলক</p>
                                 </div>
                             ) : (
-                                <button 
+                                <button
                                     onClick={handleEnroll}
                                     disabled={enrollmentLoading}
                                     className="w-full bg-[#f97316] hover:bg-[#c2570c] text-white font-bold py-3 px-4 rounded-lg mb-4 transition disabled:opacity-50 disabled:cursor-not-allowed"
@@ -462,18 +569,18 @@ try {
             </div>
 
             {/* Video Modal */}
-           <VideoModal
-    isOpen={isModalOpen && modalPlaybackUrl}
-    playbackUrl={modalPlaybackUrl || ''}
-    licenseUrl={modalLicenseUrl || ''}
-    userEmail={modalUserEmail} // ✅ User email pass করো
-    onClose={() => {
-        setIsModalOpen(false);
-        setModalPlaybackUrl(null);
-        setModalLicenseUrl(null);
-        setModalUserEmail(null); // ✅ Email clear করো
-    }}
-/>
+            <VideoModal
+                isOpen={isModalOpen && modalPlaybackUrl}
+                playbackUrl={modalPlaybackUrl || ''}
+                licenseUrl={modalLicenseUrl || ''}
+                userEmail={modalUserEmail} // ✅ User email pass করো
+                onClose={() => {
+                    setIsModalOpen(false);
+                    setModalPlaybackUrl(null);
+                    setModalLicenseUrl(null);
+                    setModalUserEmail(null); // ✅ Email clear করো
+                }}
+            />
         </div>
     );
 }

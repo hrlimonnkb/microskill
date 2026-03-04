@@ -18,15 +18,14 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
             text: "ড্যাশবোর্ড",
             roles: ['ADMIN', 'TEACHER', 'STUDENT'] 
         },
-        // --- Teacher Profile Section (Only for Teachers) ---
         {
-            id: 'teacher-profile',
-            icon: UserCircle,
-            text: "আমার প্রোফাইল",
+            id: 'teachers',
+            icon: Users,
+            text: "শিক্ষক ম্যানেজমেন্ট",
             roles: ['TEACHER'],
             children: [
-                { href: "/dashboard/teacher/profile", text: "প্রোফাইল দেখুন" },
-                { href: "/dashboard/teacher/edit-profile", text: "প্রোফাইল এডিট করুন" },
+                { href: "/dashboard/teacher/add-teacher", text: "শিক্ষক যোগ করুন" },
+                { href: "/dashboard/teacher/teachers", text: "সকল শিক্ষক" },
             ]
         },
         {
@@ -40,7 +39,26 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
             ]
         },
         {
-            id: 'teachers',
+            id: 'Orders',
+            icon: BookOpen,
+            text: "অর্ডার",
+            roles: ['ADMIN', 'TEACHER', 'STUDENT'],
+            children: [
+                { href: "/dashboard/orders", text: "সকল অর্ডার" },
+            ]
+        },
+        {
+            id: 'Certificates',
+            icon: BookOpen,
+            text: "সার্টিফিকেট",
+            roles: ['ADMIN', 'TEACHER', 'STUDENT'],
+            children: [
+                { href: "/dashboard/certificates",     text: "আমার সার্টিফিকেট", roles: ['ADMIN', 'TEACHER', 'STUDENT'] },
+                { href: "/dashboard/all-certificates", text: "সকল সার্টিফিকেট",  roles: ['ADMIN', 'TEACHER'] },
+            ]
+        },
+        {
+            id: 'teachers-admin',
             icon: Users,
             text: "শিক্ষক ম্যানেজমেন্ট",
             roles: ['ADMIN'],
@@ -69,9 +87,11 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
         },
     ];
 
+    const userRole = user?.role?.toUpperCase();
+
     const navLinks = allNavLinks.filter(link => {
-        if (!user || !user.role) return false;
-        return link.roles.includes(user.role.toUpperCase());
+        if (!userRole) return false;
+        return link.roles.includes(userRole);
     });
 
     useEffect(() => {
@@ -107,6 +127,13 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
             );
         }
 
+        // ── Child-level role filter ──────────────────────────────
+        const visibleChildren = link.children.filter(child =>
+            !child.roles || child.roles.includes(userRole)
+        );
+
+        if (visibleChildren.length === 0) return null;
+
         const isOpen = openMenus[link.id];
         return (
             <div>
@@ -124,7 +151,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
                 </button>
                 <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'max-h-60' : 'max-h-0'}`}>
                     <div className="pl-8 pt-1 border-l-2 border-gray-700 ml-5">
-                        {link.children.map(child => (
+                        {visibleChildren.map(child => (
                             <Link
                                 key={child.href}
                                 href={child.href}

@@ -1,14 +1,12 @@
 "use client";
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-// import { signIn } from 'next-auth/react'; <--- এটি বাদ দেওয়া হয়েছে
-import { useGoogleLogin } from '@react-oauth/google'; // <--- নতুন ইম্পোর্ট
+import { useRouter, useSearchParams } from 'next/navigation'; // ✅ useSearchParams যোগ
+import { useGoogleLogin } from '@react-oauth/google';
 import Head from 'next/head';
 import { CheckCircle, BookOpenText, Sparkles, Mail, Lock, Eye, EyeOff, Loader2 } from 'lucide-react';
-import { useAuth } from '@/context/AuthContext'; 
+import { useAuth } from '@/context/AuthContext';
 
-// Google Icon Component
 const GoogleIcon = () => (
     <svg className="h-5 w-5 mr-3" viewBox="0 0 24 24">
         <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -21,6 +19,9 @@ const GoogleIcon = () => (
 
 const SigninPage = () => {
     const router = useRouter();
+    const searchParams = useSearchParams(); // ✅ redirect param ধরার জন্য
+    const redirectTo = searchParams.get('redirect'); // ✅ e.g. /checkout/meta-ads-course
+
     const { login } = useAuth();
 
     const [formData, setFormData] = useState({ email: '', password: '' });
@@ -33,22 +34,28 @@ const SigninPage = () => {
         setFormData({ ...formData, [name]: value });
     };
 
+    // ✅ Login সফল হলে redirect করার helper
+    const handleLoginSuccess = (data) => {
+        login(data); // AuthContext এ save করো
+        if (redirectTo) {
+            router.push(redirectTo); // checkout বা যেখান থেকে এসেছে সেখানে যাও
+        } else {
+            router.push('/dashboard'); // default redirect
+        }
+    };
+
     // ==========================================
-    // 1. Google Login Handler (Hook)
+    // Google Login
     // ==========================================
     const handleGoogleLogin = useGoogleLogin({
         onSuccess: async (tokenResponse) => {
             setLoading(true);
             setError('');
-            
             try {
-                // আপনার ব্যাকএন্ডে টোকেন পাঠানো হচ্ছে
                 const response = await fetch('https://api.microskill.com.bd/api/auth/google-login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        token: tokenResponse.access_token // ব্যাকএন্ডে access_token পাঠানো
-                    }),
+                    body: JSON.stringify({ token: tokenResponse.access_token }),
                 });
 
                 const data = await response.json();
@@ -57,10 +64,7 @@ const SigninPage = () => {
                     throw new Error(data.message || 'Google login failed.');
                 }
 
-                // সফল হলে লগইন ফাংশন কল করা
-                login(data);
-                // router.push('/dashboard'); // AuthContext যদি রিডাইরেক্ট না করে, তবে এখানে আনকমেন্ট করুন
-
+                handleLoginSuccess(data); // ✅ redirect সহ login
             } catch (err) {
                 console.error(err);
                 setError(err.message || 'Google Sign-in failed. Please try again.');
@@ -75,12 +79,12 @@ const SigninPage = () => {
     });
 
     // ==========================================
-    // 2. Normal Email/Password Login
+    // Email/Password Login
     // ==========================================
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
-        
+
         if (!formData.email || !formData.password) {
             setError('অনুগ্রহ করে ইমেইল এবং পাসওয়ার্ড দিন।');
             return;
@@ -101,8 +105,7 @@ const SigninPage = () => {
                 throw new Error(data.message || 'Something went wrong during signin.');
             }
 
-            login(data);
-
+            handleLoginSuccess(data); // ✅ redirect সহ login
         } catch (err) {
             setError(err.message);
         } finally {
@@ -112,15 +115,13 @@ const SigninPage = () => {
 
     return (
         <>
-            {/* Next.js App Router এ Head ট্যাগ কাজ নাও করতে পারে যদি আপনি layout এ metadata ব্যবহার করেন */}
-            {/* তবুও আপনার দেওয়া কোড অনুযায়ী রেখে দিচ্ছি */}
             <Head>
                 <title>সাইন ইন - ই-লার্ণ</title>
                 <meta name="description" content="আপনার অ্যাকাউন্টে লগইন করুন" />
             </Head>
             <div style={{ backgroundColor: '#F9FAFB' }} className="min-h-screen flex items-center justify-center p-4">
                 <div className="w-full max-w-6xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden flex flex-col md:flex-row">
-                    
+
                     {/* Left Column */}
                     <div style={{ backgroundColor: '#f97316' }} className="w-full md:w-2/5 text-white p-8 md:p-12 flex-col justify-center hidden md:flex">
                         <h1 className="text-3xl font-bold mb-4">ই-লার্ণ</h1>
@@ -154,20 +155,27 @@ const SigninPage = () => {
 
                     {/* Right Column (Form) */}
                     <div className="w-full md:w-3/5 p-8 md:p-12 bg-white">
+
+                        {/* ✅ Checkout থেকে আসলে বিশেষ message দেখাও */}
+                        {redirectTo ? (
+                            <div className="mb-5 bg-orange-50 border border-orange-200 text-orange-700 text-sm px-4 py-3 rounded-lg">
+                                ✅ কোর্সে ভর্তি হতে আগে লগইন করুন।
+                            </div>
+                        ) : null}
+
                         <h2 style={{ color: '#111827' }} className="text-3xl font-bold mb-2">স্বাগতম! লগইন করুন</h2>
                         <p style={{ color: '#6B7280' }} className="mb-6">আপনার প্রোফাইলে প্রবেশ করে সেরা সেবা নিন।</p>
-                        
-                        {/* ==================== Google Button ==================== */}
-                        <button 
-                            onClick={() => handleGoogleLogin()} 
+
+                        {/* Google Button */}
+                        <button
+                            onClick={() => handleGoogleLogin()}
                             disabled={loading}
-                            className="w-full flex items-center justify-center py-2.5 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" 
+                            className="w-full flex items-center justify-center py-2.5 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                             style={{ color: '#111827' }}
                         >
                             <GoogleIcon />
                             গুগল দিয়ে সাইন ইন করুন
                         </button>
-                        {/* ======================================================= */}
 
                         <div className="flex items-center my-6">
                             <hr className="flex-grow border-t border-gray-300"/>
@@ -181,7 +189,7 @@ const SigninPage = () => {
                                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                                 <input type="email" name="email" placeholder="ইমেইল অ্যাড্রেস" value={formData.email} onChange={handleChange} required className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 placeholder-gray-500" />
                             </div>
-                            
+
                             {/* Password */}
                             <div className="relative">
                                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -190,8 +198,7 @@ const SigninPage = () => {
                                     {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                                 </button>
                             </div>
-                            
-                            {/* Error Message */}
+
                             {error && <p className="text-sm text-red-600 bg-red-50 p-3 rounded-lg text-center">{error}</p>}
 
                             <div className="flex items-center justify-end">
@@ -200,19 +207,24 @@ const SigninPage = () => {
                                 </a>
                             </div>
 
-                            <button 
-                                type="submit" 
+                            <button
+                                type="submit"
                                 disabled={loading}
                                 className="w-full text-white font-semibold py-3 px-4 rounded-lg transition-colors flex items-center justify-center bg-[#ea670c] hover:bg-[#c2570c] disabled:bg-[#fb8a3c]"
                                 style={{ color: '#FFFFFF' }}
                             >
-                               {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : 'লগইন করুন'}
+                                {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : 'লগইন করুন'}
                             </button>
                         </form>
 
                         <p style={{ color: '#6B7280' }} className="text-center text-sm mt-6">
                             অ্যাকাউন্ট নেই?{' '}
-                            <a href="/signup" style={{ color: '#fb8a3c' }} className="font-semibold hover:underline">
+                            {/* ✅ Signup এও redirect param পাঠাও */}
+                            <a
+                                href={redirectTo ? `/signup?redirect=${encodeURIComponent(redirectTo)}` : '/signup'}
+                                style={{ color: '#fb8a3c' }}
+                                className="font-semibold hover:underline"
+                            >
                                 সাইন আপ করুন
                             </a>
                         </p>

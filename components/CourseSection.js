@@ -106,7 +106,7 @@ const PopularClassCard = ({ course }) => {
       <div className="p-5 flex flex-col flex-grow">
         <p className="text-[#f97316] font-medium text-sm">{categoryName}</p>
         
-        <Link href={`/course/${course.slug}`} className="block mt-1">
+        <Link href={`/courses/${course.slug}`} className="block mt-1">
           <h3 className="text-xl font-bold text-gray-900 flex justify-between items-center transition-colors duration-300 group-hover:text-[#f97316]">
             {course.title}
             <MoveRight className="w-5 h-5 text-gray-400 transition-colors duration-300 group-hover:text-[#f97316]" />
@@ -190,6 +190,7 @@ const PopularClassSection = () => {
         }
         
         const data = await response.json();
+        console.log(data);
         
         // যদি data array হয়, তাহলে সরাসরি use করুন
         // যদি data.courses থাকে, তাহলে সেটা use করুন

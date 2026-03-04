@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
-import Hls from 'hls.js';
+import shaka from "shaka-player/dist/shaka-player.compiled.js";
 import {
     PlayCircle, Lock, ChevronLeft, ChevronRight, BookOpen,
     FileText, Bookmark, ThumbsUp, ThumbsDown, Menu, X, Settings,
@@ -26,9 +26,7 @@ export default function CoursePlayerPage() {
     const [noteTitle, setNoteTitle] = useState('');
     const [noteContent, setNoteContent] = useState('');
     const [activeTab, setActiveTab] = useState('notes');
-    const [availableQualities, setAvailableQualities] = useState([]);
-    const [currentQuality, setCurrentQuality] = useState('auto');
-    const [showQualityMenu, setShowQualityMenu] = useState(false);
+   
     
     // ✅ Progress & Notes State
     const [lessonCompleted, setLessonCompleted] = useState(false);
@@ -40,8 +38,8 @@ export default function CoursePlayerPage() {
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [modalMessage, setModalMessage] = useState('');
 
-    const videoRef = useRef(null);
-    const hlsRef = useRef(null);
+   const videoRef = useRef(null);
+   
 useEffect(() => {
         console.log('🎯 Component mounted, fetching course data...');
         fetchCourseData();
@@ -53,16 +51,7 @@ useEffect(() => {
         }
     }, [currentLesson]);
 
-    useEffect(() => {
-        if (currentLesson) {
-            loadLessonVideo();
-        }
-        return () => {
-            if (hlsRef.current) {
-                hlsRef.current.destroy();
-            }
-        };
-    }, [currentLesson]);
+    
 
  const fetchCourseData = async () => {
         try {
@@ -120,98 +109,60 @@ useEffect(() => {
         }
     };
 
-    const loadLessonVideo = async () => {
-        if (!currentLesson) return;
+const loadLessonVideo = async () => {
+    if (!currentLesson) return;
 
-        try {
-            const token = localStorage.getItem('authToken');
+    try {
+        const token = localStorage.getItem('authToken');
+        if (!token) throw new Error('No token');
 
-            console.log('🎬 Loading video for lesson:', currentLesson.id);
+        const response = await fetch(`${API_BASE_URL}/api/courses/get-video-url`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ lessonId: currentLesson.id })
+        });
 
-            const response = await fetch(`${API_BASE_URL}/api/courses/get-video-url`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({ lessonId: currentLesson.id })
-            });
+        if (!response.ok) throw new Error('API error');
 
-            if (!response.ok) {
-                throw new Error('ভিডিও লোড করতে সমস্যা হয়েছে');
-            }
+        const data = await response.json();
+        if (!data.success) throw new Error(data.message || 'URL নেই');
 
-            const data = await response.json();
+        setVideoUrl(data.embedUrl);
+        console.log('✅ Embed URL set:', data.embedUrl);
 
-            if (!data.success || !data.playbackUrl) {
-                throw new Error('ভিডিও URL পাওয়া যায়নি');
-            }
-
-            console.log('✅ Video URL received:', data.playbackUrl);
-
-            setVideoUrl(data.playbackUrl);
-
-            // Load video with HLS.js
-            if (videoRef.current && data.playbackUrl) {
-                if (Hls.isSupported()) {
-                    if (hlsRef.current) {
-                        hlsRef.current.destroy();
-                    }
-
-                    const hls = new Hls({
-                        enableWorker: true,
-                        lowLatencyMode: true,
-                    });
-
-                    hls.loadSource(data.playbackUrl);
-                    hls.attachMedia(videoRef.current);
-
-                    hls.on(Hls.Events.MANIFEST_PARSED, () => {
-                        console.log('✅ Video loaded successfully');
-                        
-                        // ✅ Get available quality levels
-                        const levels = hls.levels.map((level, index) => ({
-                            index: index,
-                            height: level.height,
-                            width: level.width,
-                            bitrate: level.bitrate,
-                            label: `${level.height}p`
-                        }));
-                        
-                        setAvailableQualities(levels);
-                        console.log('📊 Available qualities:', levels);
-                    });
-
-                    hls.on(Hls.Events.ERROR, (event, data) => {
-                        if (data.fatal) {
-                            console.error('❌ HLS Error:', data);
-                        }
-                    });
-
-                    hlsRef.current = hls;
-                } else if (videoRef.current.canPlayType('application/vnd.apple.mpegurl')) {
-                    videoRef.current.src = data.playbackUrl;
-                }
-            }
-
-        } catch (error) {
-            console.error('Error loading video:', error);
-            setModalMessage(`❌ ভিডিও লোড করতে সমস্যা: ${error.message}`);
-            setShowSuccessModal(true);
-        }
-    };
+    } catch (error) {
+        console.error('❌ loadLessonVideo failed:', error);
+        setModalMessage(`❌ ভিডিও লোড করতে সমস্যা: ${error.message}`);
+        setShowSuccessModal(true);
+    }
+};
 
     const changeQuality = (qualityIndex) => {
-        if (!hlsRef.current) return;
+        if (!shakaRef.current) {
+            console.warn('⚠️ Shaka Player not ready for quality change');
+            return;
+        }
 
         if (qualityIndex === 'auto') {
-            hlsRef.current.currentLevel = -1; // Auto quality
+            // ✅ ABR (Adaptive Bitrate) enable করো — Auto quality
+            shakaRef.current.configure({ abr: { enabled: true } });
             setCurrentQuality('auto');
-            console.log('🎬 Quality set to: Auto');
+            console.log('🎬 Quality set to: Auto (ABR enabled)');
         } else {
-            hlsRef.current.currentLevel = qualityIndex;
-            setCurrentQuality(availableQualities[qualityIndex].label);
-            console.log('🎬 Quality set to:', availableQualities[qualityIndex].label);
+            const selectedQuality = availableQualities[qualityIndex];
+            if (!selectedQuality || !selectedQuality.shakaTrack) {
+                console.warn('⚠️ Quality track not found:', qualityIndex);
+                return;
+            }
+
+            // ✅ ABR disable করো এবং specific track select করো
+            shakaRef.current.configure({ abr: { enabled: false } });
+            shakaRef.current.selectVariantTrack(selectedQuality.shakaTrack, /* clearBuffer */ true);
+            setCurrentQuality(selectedQuality.label);
+            console.log('🎬 Quality set to:', selectedQuality.label, '(ABR disabled)');
         }
 
         setShowQualityMenu(false);
@@ -242,7 +193,12 @@ useEffect(() => {
             setCurrentLesson(allLessons[currentIndex + 1]);
         }
     };
-
+// ✅ ADD THIS — triggers video load when lesson changes
+useEffect(() => {
+    if (currentLesson) {
+        loadLessonVideo();
+    }
+}, [currentLesson]);
 // ✅ Fetch Lesson Progress
     const fetchLessonProgress = async () => {
         try {
@@ -292,11 +248,11 @@ useEffect(() => {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify({
-                    lessonId: currentLesson.id,
-                    courseId: course.id,
-                    watchedDuration: Math.floor(videoRef.current?.currentTime || 0)
-                })
+body: JSON.stringify({
+    lessonId: currentLesson.id,
+    courseId: course.id,
+    watchedDuration: 0  // iframe doesn't expose currentTime
+})
             });
 
             if (!response.ok) {
@@ -509,96 +465,56 @@ useEffect(() => {
                 {/* Main Content */}
                 <div className="flex-1 flex flex-col">
                     {/* Video Player */}
-                  {/* Video Player Container */}
-                    <div className="bg-black">
-                        {/* Video Element */}
-                        <div className="relative">
-                            <video
-                                ref={videoRef}
-                                controls
-                                controlsList="nodownload"
-                                className="w-full aspect-video"
-                            />
+                {/* Video Player Container */}
+<div className="bg-black">
+    <div className="relative w-full aspect-video">
+        {videoUrl ? (
+            <iframe
+                src={videoUrl}
+                className="w-full h-full"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+            />
+        ) : (
+            <div className="w-full h-full flex items-center justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-[#f97316]" />
+            </div>
+        )}
 
-                            {/* Toggle Sidebar Button */}
-                            <button
-                                onClick={() => setSidebarOpen(!sidebarOpen)}
-                                className="absolute top-4 left-4 p-2 bg-black/60 hover:bg-black/80 rounded-lg transition backdrop-blur-sm"
-                            >
-                                {sidebarOpen ? <X size={20} className="text-white" /> : <Menu size={20} className="text-white" />}
-                            </button>
+        {/* Toggle Sidebar Button */}
+        <button
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="absolute top-4 left-4 p-2 bg-black/60 hover:bg-black/80 rounded-lg transition backdrop-blur-sm"
+        >
+            {sidebarOpen ? <X size={20} className="text-white" /> : <Menu size={20} className="text-white" />}
+        </button>
+    </div>
 
-                            {/* Quality Selector */}
-                            <div className="absolute top-4 right-4">
-                                <div className="relative">
-                                    <button
-                                        onClick={() => setShowQualityMenu(!showQualityMenu)}
-                                        className="px-4 py-2 bg-black/60 hover:bg-black/80 rounded-lg transition backdrop-blur-sm text-white text-sm font-medium flex items-center gap-2"
-                                    >
-                                        <Settings size={16} />
-                                        {currentQuality}
-                                    </button>
-
-                                    {showQualityMenu && (
-                                        <div className="absolute right-0 mt-2 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden min-w-[150px] z-50">
-                                            <button
-                                                onClick={() => changeQuality('auto')}
-                                                className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition ${
-                                                    currentQuality === 'auto' ? 'bg-orange-50 text-[#f97316] font-semibold' : 'text-gray-700'
-                                                }`}
-                                            >
-                                                Auto
-                                            </button>
-                                            {availableQualities.map((quality, index) => (
-                                                <button
-                                                    key={index}
-                                                    onClick={() => changeQuality(index)}
-                                                    className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition ${
-                                                        currentQuality === quality.label ? 'bg-orange-50 text-[#f97316] font-semibold' : 'text-gray-700'
-                                                    }`}
-                                                >
-                                                    {quality.label}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Custom Controls Bar */}
-                      {/* Custom Controls Bar */}
-                        <div className="bg-black border-t border-gray-800 px-6 py-3 flex items-center justify-between gap-3">
-                            <div className="flex gap-3">
-                                <button
-                                    onClick={handlePrevious}
-                                    className="px-6 py-2 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-semibold rounded-md transition-all flex items-center gap-2 shadow-lg"
-                                >
-                                    Previous
-                                </button>
-                                <button
-                                    onClick={handleNext}
-                                    className="px-6 py-2 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-semibold rounded-md transition-all flex items-center gap-2 shadow-lg"
-                                >
-                                    Next
-                                </button>
-                            </div>
-                            
-                            {/* ✅ Mark Complete Button */}
-                            <button
-                                onClick={markLessonComplete}
-                                disabled={lessonCompleted}
-                                className={`px-6 py-2 font-semibold rounded-md transition-all flex items-center gap-2 shadow-lg ${
-                                    lessonCompleted
-                                        ? 'bg-green-600 text-white cursor-not-allowed'
-                                        : 'bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white'
-                                }`}
-                            >
-                                <CheckCircle size={18} />
-                                {lessonCompleted ? '✓ সম্পন্ন হয়েছে' : 'সম্পন্ন করুন'}
-                            </button>
-                        </div>
-                    </div>
+    {/* Custom Controls Bar */}
+    <div className="bg-black border-t border-gray-800 px-6 py-3 flex items-center justify-between gap-3">
+        <div className="flex gap-3">
+            <button onClick={handlePrevious} className="px-6 py-2 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-semibold rounded-md transition-all flex items-center gap-2 shadow-lg">
+                Previous
+            </button>
+            <button onClick={handleNext} className="px-6 py-2 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-semibold rounded-md transition-all flex items-center gap-2 shadow-lg">
+                Next
+            </button>
+        </div>
+        <button
+            onClick={markLessonComplete}
+            disabled={lessonCompleted}
+            className={`px-6 py-2 font-semibold rounded-md transition-all flex items-center gap-2 shadow-lg ${
+                lessonCompleted
+                    ? 'bg-green-600 text-white cursor-not-allowed'
+                    : 'bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white'
+            }`}
+        >
+            <CheckCircle size={18} />
+            {lessonCompleted ? '✓ সম্পন্ন হয়েছে' : 'সম্পন্ন করুন'}
+        </button>
+    </div>
+</div>
                     {/* Bottom Section - Tabs */}
                     <div className="bg-white flex-1 flex flex-col border-t border-gray-200">
                         {/* Tab Headers */}

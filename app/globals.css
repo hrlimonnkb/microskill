@@ -89,3 +89,10 @@ body {
   background-color: #f97316; /* সবুজ রঙ ([#f97316]) */
   width: 20px; /* লম্বা করার জন্য */
 }
+@keyframes spin-slow {
+    0%   { filter: hue-rotate(0deg); }
+    100% { filter: hue-rotate(360deg); }
+}
+.animate-spin-slow {
+    animation: spin-slow 3s linear infinite;
+}
