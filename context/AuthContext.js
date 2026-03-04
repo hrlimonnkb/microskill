@@ -4,10 +4,9 @@ import { createContext, useContext, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 const AuthContext = createContext(null);
-
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
-    const [token, setToken] = useState(null); // <-- ১. টোকেনের জন্য নতুন স্টেট
+    const [token, setToken] = useState(null); 
     const [loading, setLoading] = useState(true);
     const router = useRouter();
 
