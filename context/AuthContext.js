@@ -13,8 +13,7 @@ export const AuthProvider = ({ children }) => {
     useEffect(() => {
         try {
             const storedUser = localStorage.getItem('user');
-            const storedToken = localStorage.getItem('authToken'); // <-- ২. লোকাল স্টোরেজ থেকে টোকেন আনা
-
+            const storedToken = localStorage.getItem('authToken'); 
             if (storedUser && storedToken) {
                 // ইউজার এবং টোকেন দুটোই পেলে state-এ সেট করবে
                 setUser(JSON.parse(storedUser));
