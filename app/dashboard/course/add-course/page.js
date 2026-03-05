@@ -366,7 +366,7 @@ export default function ManageCoursePage() {
         <div className="min-h-screen bg-slate-50">
 
             {/* ── Sticky Page Header ── */}
-            <div className="bg-white border-b border-slate-200 sticky top-0 z-10 shadow-sm">
+            <div className="bg-white border-b border-slate-200 fixed-0 z-10 shadow-sm">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <span className="flex items-center justify-center w-9 h-9 rounded-xl"

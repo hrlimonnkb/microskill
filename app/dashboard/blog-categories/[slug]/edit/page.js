@@ -6,7 +6,7 @@ import toast from 'react-hot-toast';
 import PageHeading from '@/components/ui/PageHeading';
 import { CategoryForm } from '@/components/dashboard/Post/Category/CategoryForm';
 
-const API_BASE = 'http://localhost:8006';
+const API_BASE = 'https://api.microskill.com.bd';
 
 function authFetch(path, options = {}) {
   const token = localStorage.getItem('authToken');

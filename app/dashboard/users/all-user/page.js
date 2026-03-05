@@ -271,8 +271,15 @@ export default function UserManagementTable() {
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div className="flex items-center">
                                             <div className="flex-shrink-0 h-10 w-10">
-                                                <Image className="h-10 w-10 rounded-full object-cover"  width={40} 
-                            height={40} src={u.image ? `${u.image}` : `https://placehold.co/40x40/e2e8f0/64748b?text=${u.name ? u.name.charAt(0).toUpperCase() : '?'}`} alt={u.name || u.username} />
+                                               
+<Image 
+  className="h-10 w-10 rounded-full object-cover"  
+  width={40} 
+  height={40} 
+  // Add API_BASE_URL here and ensure a slash exists between them
+  src={u.image ? `${API_BASE_URL}/${u.image}` : `https://placehold.co/40x40/e2e8f0/64748b?text=${u.name ? u.name.charAt(0).toUpperCase() : '?'}`} 
+  alt={u.name || u.username} 
+/>
                                             </div>
                                             <div className="ml-4">
                                                 <div className="text-sm font-semibold text-gray-900">{u.name || 'N/A'}</div>

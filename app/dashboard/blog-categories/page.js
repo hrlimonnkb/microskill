@@ -10,7 +10,7 @@ import { CategoryTable } from '@/components/ui/Categorytable';
 import { Modal } from '@/components/ui/Modal';
 import { Pagination } from '@/components/ui/Pagination';
 
-const API_BASE = 'http://localhost:8006';
+const API_BASE = 'https://api.microskill.com.bd';
 
 function authFetch(path, options = {}) {
   const token = localStorage.getItem('token');
