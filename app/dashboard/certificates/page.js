@@ -167,9 +167,9 @@ export const CertificateTemplate = ({
 
       {/* description */}
       <div style={{ position:"absolute",top:368,left:110,right:110,textAlign:"center",fontSize:15.5,color:"#555",lineHeight:1.8 }}>
-        has successfully completed the course{" "}
-        <span style={{ fontWeight:"bold", color:"#c45508" }}>"{courseTitle}"</span>
-        {" "}conducted on {completedAt}.<br/>
+        has successfully completed the course
+        <span style={{ fontWeight:"bold", color:"#c45508" }}>{courseTitle}</span>
+       conducted on {completedAt}.<br/>
         Their dedication and commitment to the learning process are truly commendable.
       </div>
 

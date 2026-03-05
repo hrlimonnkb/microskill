@@ -101,7 +101,7 @@ const CertificateTemplate = ({ id="cert-tpl", scale=1, studentName, courseTitle,
         <div style={{ width:240,height:1.5,background:"#ea670c",opacity:0.45 }}/><div style={{ width:9,height:9,borderRadius:"50%",background:"#ea670c",opacity:0.7 }}/><div style={{ width:240,height:1.5,background:"#ea670c",opacity:0.45 }}/>
       </div>
       <div style={{ position:"absolute",top:366,left:110,right:110,textAlign:"center",fontSize:15,color:"#555",lineHeight:1.8 }}>
-        has successfully completed the course <span style={{ fontWeight:"bold",color:"#c45508" }}>"{courseTitle}"</span> conducted on {completedAt}.<br/>
+        has successfully completed the course <span style={{ fontWeight:"bold",color:"#c45508" }}>{courseTitle}</span> conducted on {completedAt}.<br/>
         Their dedication and commitment to the learning process are truly commendable.
       </div>
       <div style={{ position:"absolute",top:470,left:0,right:0,textAlign:"center",fontSize:16,fontWeight:"bold",color:"#333" }}>Awarded on {awardedAt}</div>
