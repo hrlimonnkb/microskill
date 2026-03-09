@@ -106,7 +106,7 @@ export function PostTable({
 
       <Modal isOpen={!!postToDelete} onClose={() => setPostToDelete(null)} title="Confirm Post Deletion">
         <div>
-          <p>Are you sure you want to delete the post <span className="font-bold">"{postToDelete?.title}"</span>?</p>
+          <p>Are you sure you want to delete the post <span className="font-bold"> {postToDelete?.title} </span>?</p>
           <div className="mt-6 flex justify-end gap-4">
             <button type="button" className="px-4 py-2 text-sm font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-md cursor-pointer" onClick={() => setPostToDelete(null)}>Cancel</button>
             <button type="button" className="px-4 py-2 text-sm font-semibold text-white bg-red-600 hover:bg-red-700 rounded-md cursor-pointer" onClick={confirmDelete}>Delete</button>

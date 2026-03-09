@@ -227,7 +227,7 @@ function NewsletterWidget() {
                 {status === 'success' ? (
                     <div className="text-center py-4">
                         <div className="text-3xl mb-2">🎉</div>
-                        <p className="text-sm font-semibold">You're subscribed!</p>
+                        <p className="text-sm font-semibold">You are subscribed!</p>
                         <p className="text-blue-200 text-xs mt-1">Thanks for joining.</p>
                     </div>
                 ) : (
