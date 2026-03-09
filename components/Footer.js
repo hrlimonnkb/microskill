@@ -49,14 +49,14 @@ const Footer = () => {
               <li><Link href="/about" className="hover:text-white">আমাদের সম্পর্কে</Link></li>
               <li><Link href="#" className="hover:text-white">ক্যারিয়ার</Link></li>
               <li>
-                <Link href="#" className="flex items-center gap-2 hover:text-white">
+                <Link href="/blog" className="flex items-center gap-2 hover:text-white">
                   প্রেস
                   <span className="bg-slate-100 text-slate-800 text-xs font-bold px-2.5 py-0.5 rounded-full">
                     নতুন
                   </span>
                 </Link>
               </li>
-              <li><Link href="#" className="hover:text-white">সংবাদ</Link></li>
+              <li><Link href="/blog" className="hover:text-white">সংবাদ</Link></li>
             </ul>
           </div>
 
@@ -86,7 +86,7 @@ const Footer = () => {
         {/* নিচের অংশ: কপিরাইট ও আইকন */}
         <div className="pt-8 border-t border-slate-700 flex flex-col sm:flex-row justify-between items-center">
           <p className="text-sm text-center sm:text-left">
-            © ২০২৫ মাইক্রো স্কীল। সর্বস্বত্ব সংরক্ষিত।
+            © ২০২৬ মাইক্রো স্কীল। সর্বস্বত্ব সংরক্ষিত। 
           </p>
           <div className="flex space-x-4 mt-4 sm:mt-0">
             <Link href="#" className="hover:text-white"><Twitter size={20} /></Link>

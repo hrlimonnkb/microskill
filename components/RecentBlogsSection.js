@@ -1,165 +1,206 @@
-import React from 'react';
+'use client';
+
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 
-// --- ডেমো ডেটা (বাংলায় অনুবাদিত) ---
-const smallBlogs = [
-  {
-    id: 1,
-    imageSrc:  "/assets/Image(4).png",
-    date: "১৬ নভেম্বর, ২০১৪",
-    title: "ইউজার আনন্দের তিনটি স্তম্ভ",
-    description: "আনন্দ অনুভব করা যায় শারীরিকভাবে, আচরণগতভাবে এবং চিন্তাগতভাবে। একটি চমৎকার ডিজাইন হল ...",
-    tags: [
-      { label: "গবেষণা", color: "pink" },
-      { label: "UI UX", color: "blue" },
-    ],
-  },
-  {
-    id: 2,
-    imageSrc: "/assets/Image(5).png",
-    date: "২৪ সেপ্টেম্বর, ২০১৭",
-    title: "UX ম্যাপিং পদ্ধতি",
-    description: "ভিজ্যুয়াল-ডিজাইনের নীতিগুলো একটি পরিপূর্ণ UX মানচিত্র তৈরি করার সময় ধারাবাহিকভাবে প্রয়োগ করা যেতে পারে...",
-    tags: [
-      { label: "গবেষণা", color: "pink" },
-      { label: "UI ডিজাইন", color: "blue" },
-    ],
-  },
-];
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.microskill.com.bd';
 
-const largeBlog = {
-  id: 3,
-  imageSrc: "/assets/Image(6).png",
-  date: "১৩ মার্চ, ২০১৪",
-  title: "অ্যাজাইল ডেভেলপমেন্ট প্রজেক্ট ও ব্যবহারযোগ্যতা",
-  description: "অ্যাজাইল পদ্ধতি ঐতিহ্যবাহী ডেভেলপমেন্টে ব্যবহারযোগ্যতার বাধা দূর করতে চায়, তবে এটি ব্যবহারকারীর অভিজ্ঞতার মানের নতুন হুমকিও তৈরি করে।",
-  tags: [
-    { label: "প্রোগ্রামিং", color: "orange" },
-    { label: "গবেষণা", color: "indigo" },
-    { label: "ডেভেলপমেন্ট", color: "pink" },
-  ],
-};
-// --- ডেটা শেষ ---
+function getImageSrc(image) {
+    if (!image) return null;
+    return image.startsWith('http') ? image : `${API_BASE}/${image.replace(/^\//, '')}`;
+}
 
+function formatDate(dateStr) {
+    if (!dateStr) return '';
+    return new Date(dateStr).toLocaleDateString('bn-BD', {
+        year: 'numeric', month: 'long', day: 'numeric',
+    });
+}
 
-/**
- * Reusable Tag Component
- */
 const BlogTag = ({ label, color }) => {
-  const colorClasses = {
-    pink: "bg-pink-100 text-pink-600",
-    blue: "bg-blue-100 text-blue-600",
-    orange: "bg-orange-100 text-orange-600",
-    indigo: "bg-indigo-100 text-[#ea670c]",
-  };
-
-  return (
-    <span className={`text-sm font-medium px-3 py-1 rounded-full ${colorClasses[color] || 'bg-gray-100 text-gray-600'}`}>
-      {label}
-    </span>
-  );
+    const colorClasses = {
+        pink:   'bg-pink-100 text-pink-600',
+        blue:   'bg-blue-100 text-blue-600',
+        orange: 'bg-orange-100 text-orange-600',
+        indigo: 'bg-indigo-100 text-[#ea670c]',
+    };
+    return (
+        <span className={`text-sm font-medium px-3 py-1 rounded-full ${colorClasses[color] || 'bg-gray-100 text-gray-600'}`}>
+            {label}
+        </span>
+    );
 };
 
-/**
- * Reusable Small Blog Card (Image on left)
- */
 const SmallBlogCard = ({ blog }) => {
-  return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 items-center group">
-      <Image
-        src={blog.imageSrc}
-        alt={blog.title}
-        width={300}
-        height={200}
-        className="w-full h-48 object-cover rounded-lg transition-transform duration-300 group-hover:scale-105"
-      />
-      <div className="flex flex-col justify-center">
-        <p className="text-sm text-gray-500">{blog.date}</p>
-        <Link href={`/blog/${blog.id}`} passHref>
-          <span className="text-xl font-bold text-gray-900 mt-2 block transition-colors duration-300 group-hover:text-[#f97316]">
-            {blog.title}
-          </span>
-        </Link>
-        <p className="text-gray-600 text-base mt-2">
-          {blog.description}
-        </p>
-        <div className="flex flex-wrap gap-2 mt-4">
-          {blog.tags.map((tag) => (
-            <BlogTag key={tag.label} label={tag.label} color={tag.color} />
-          ))}
+    const imgSrc = getImageSrc(blog.featuredImage);
+    return (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 items-center group">
+            <div className="w-full h-48 rounded-lg overflow-hidden bg-slate-100 flex-shrink-0">
+                {imgSrc ? (
+                    <Image
+                        src={imgSrc}
+                        alt={blog.title}
+                        width={300}
+                        height={200}
+                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                ) : (
+                    <div className="w-full h-full flex items-center justify-center text-slate-300">
+                        <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+                                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                        </svg>
+                    </div>
+                )}
+            </div>
+            <div className="flex flex-col justify-center">
+                <p className="text-sm text-gray-500">{formatDate(blog.createdAt)}</p>
+                <Link href={`/blog/${blog.slug}`}>
+                    <span className="text-xl font-bold text-gray-900 mt-2 block transition-colors duration-300 group-hover:text-[#f97316]">
+                        {blog.title}
+                    </span>
+                </Link>
+                <p className="text-gray-600 text-base mt-2 line-clamp-2">{blog.excerpt}</p>
+                {blog.category && (
+                    <div className="flex flex-wrap gap-2 mt-4">
+                        <BlogTag label={blog.category.name} color="blue" />
+                    </div>
+                )}
+            </div>
         </div>
-      </div>
-    </div>
-  );
+    );
 };
 
-/**
- * Reusable Large Blog Card (Image on top)
- */
 const LargeBlogCard = ({ blog }) => {
-  return (
-    <div className="flex flex-col group">
-      <Image
-        src={blog.imageSrc}
-        alt={blog.title}
-        width={600}
-        height={400}
-        className="w-full h-80 object-cover rounded-lg transition-transform duration-300 group-hover:scale-105"
-      />
-      <div className="mt-6">
-        <p className="text-sm text-gray-500">{blog.date}</p>
-        <Link href={`/blog/${blog.id}`} passHref>
-          <span className="text-2xl font-bold text-gray-900 mt-2 block transition-colors duration-300 group-hover:text-[#f97316]">
-            {blog.title}
-          </span>
-        </Link>
-        <p className="text-gray-600 text-base mt-3">
-          {blog.description}
-        </p>
-        <div className="flex flex-wrap gap-2 mt-4">
-          {blog.tags.map((tag) => (
-            <BlogTag key={tag.label} label={tag.label} color={tag.color} />
-          ))}
+    const imgSrc = getImageSrc(blog.featuredImage);
+    return (
+        <div className="flex flex-col group">
+            <div className="w-full h-80 rounded-lg overflow-hidden bg-slate-100">
+                {imgSrc ? (
+                    <Image
+                        src={imgSrc}
+                        alt={blog.title}
+                        width={600}
+                        height={400}
+                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                ) : (
+                    <div className="w-full h-full flex items-center justify-center text-slate-300">
+                        <svg className="w-14 h-14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+                                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                        </svg>
+                    </div>
+                )}
+            </div>
+            <div className="mt-6">
+                <p className="text-sm text-gray-500">{formatDate(blog.createdAt)}</p>
+                <Link href={`/blog/${blog.slug}`}>
+                    <span className="text-2xl font-bold text-gray-900 mt-2 block transition-colors duration-300 group-hover:text-[#f97316]">
+                        {blog.title}
+                    </span>
+                </Link>
+                <p className="text-gray-600 text-base mt-3 line-clamp-3">{blog.excerpt}</p>
+                {blog.category && (
+                    <div className="flex flex-wrap gap-2 mt-4">
+                        <BlogTag label={blog.category.name} color="orange" />
+                    </div>
+                )}
+            </div>
         </div>
-      </div>
-    </div>
-  );
+    );
 };
 
-/**
- * The Main "Our recent blogs" Section
- */
-const RecentBlogsSection = () => {
-  return (
-    <section className="py-16 md:py-24 bg-white">
-      <div className="max-w-7xl mx-auto px-4">
-        
-        {/* Section Heading */}
-        <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-12">
-          আমাদের সাম্প্রতিক ব্লগসমূহ
-        </h2>
-        
-        {/* Blog Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-8">
-          
-          {/* বাম দিকের ছোট ব্লগ কার্ড */}
-          <div className="flex flex-col gap-10">
-            {smallBlogs.map((blog) => (
-              <SmallBlogCard key={blog.id} blog={blog} />
-            ))}
-          </div>
-          
-          {/* ডান দিকের বড় ব্লগ কার্ড */}
-          <div className="mt-4 lg:mt-0">
-            <LargeBlogCard blog={largeBlog} />
-          </div>
-          
+// Skeleton loaders
+const SmallCardSkeleton = () => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 items-center animate-pulse">
+        <div className="w-full h-48 bg-slate-200 rounded-lg" />
+        <div className="space-y-3">
+            <div className="h-3 bg-slate-200 rounded w-1/3" />
+            <div className="h-5 bg-slate-200 rounded w-full" />
+            <div className="h-5 bg-slate-100 rounded w-3/4" />
+            <div className="h-4 bg-slate-100 rounded w-full" />
+            <div className="h-6 bg-slate-200 rounded-full w-20 mt-2" />
         </div>
-        
-      </div>
-    </section>
-  );
+    </div>
+);
+
+const LargeCardSkeleton = () => (
+    <div className="flex flex-col animate-pulse">
+        <div className="w-full h-80 bg-slate-200 rounded-lg" />
+        <div className="mt-6 space-y-3">
+            <div className="h-3 bg-slate-200 rounded w-1/4" />
+            <div className="h-6 bg-slate-200 rounded w-full" />
+            <div className="h-6 bg-slate-100 rounded w-3/4" />
+            <div className="h-4 bg-slate-100 rounded w-full" />
+            <div className="h-4 bg-slate-100 rounded w-2/3" />
+            <div className="h-6 bg-slate-200 rounded-full w-24 mt-2" />
+        </div>
+    </div>
+);
+
+const RecentBlogsSection = () => {
+    const [posts, setPosts]   = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError]   = useState(null);
+
+    useEffect(() => {
+        async function fetchPosts() {
+            try {
+                const res  = await fetch(`${API_BASE}/api/post?limit=3&status=PUBLISHED&sort=createdAt:desc`);
+                if (!res.ok) throw new Error('Failed to fetch posts');
+                const data = await res.json();
+                // Handle all common API response shapes:
+                // { posts: [] } | { content: [] } | { data: [] } | []
+                const list = data?.posts ?? data?.content ?? data?.data ?? (Array.isArray(data) ? data : []);
+                setPosts(Array.isArray(list) ? list : []);
+            } catch (err) {
+                setError(err.message);
+            } finally {
+                setLoading(false);
+            }
+        }
+        fetchPosts();
+    }, []);
+
+    const smallPosts = posts.slice(0, 2);
+    const largePost  = posts[2] || null;
+
+    if (error) return null; // silently fail on homepage section
+
+    return (
+        <section className="py-16 md:py-24 bg-white">
+            <div className="max-w-7xl mx-auto px-4">
+
+                <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-12">
+                    আমাদের সাম্প্রতিক ব্লগসমূহ
+                </h2>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-8">
+
+                    {/* Left — small cards */}
+                    <div className="flex flex-col gap-10">
+                        {loading ? (
+                            <><SmallCardSkeleton /><SmallCardSkeleton /></>
+                        ) : (
+                            smallPosts.map(post => <SmallBlogCard key={post.id} blog={post} />)
+                        )}
+                    </div>
+
+                    {/* Right — large card */}
+                    <div className="mt-4 lg:mt-0">
+                        {loading ? (
+                            <LargeCardSkeleton />
+                        ) : largePost ? (
+                            <LargeBlogCard blog={largePost} />
+                        ) : null}
+                    </div>
+
+                </div>
+            </div>
+        </section>
+    );
 };
 
 export default RecentBlogsSection;
