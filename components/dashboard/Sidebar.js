@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ShoppingBag, Home, BookOpen, BarChart2, Settings, X, Users, ChevronDown, User2, UserCircle, UserPen } from 'lucide-react';
+import { ShoppingBag, Home, BookOpen, BarChart2, Settings, X, Users, ChevronDown, User2, UserCircle, UserPen, Newspaper } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
 const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
@@ -39,6 +39,19 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
             ]
         },
         {
+            id: 'blogs',
+            icon: Newspaper,
+            text: "ব্লগ",
+            roles: ['ADMIN'],
+            children: [
+                { href: "/dashboard/blog-categories/new", text: "ব্লগ ক্যাটেগরি" },
+                { href: "/dashboard/blog-categories", text: "সকল ক্যাটেগরি" },
+                { href: "/dashboard/blog/new", text: "ব্লগ যোগ করুন" },
+                { href: "/dashboard/blog", text: "সকল ব্লগ" },
+                { href: "/dashboard/comments", text: "সকল মন্তব্য" },
+            ]
+        },
+        {
             id: 'Orders',
             icon: BookOpen,
             text: "অর্ডার",
@@ -67,6 +80,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
                 { href: "/dashboard/teacher/teachers", text: "সকল শিক্ষক" },
             ]
         },
+        
         { 
             href: "/dashboard/users/all-user", 
             icon: User2, 

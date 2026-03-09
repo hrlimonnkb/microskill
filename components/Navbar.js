@@ -3,18 +3,18 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Search, Menu as MenuIcon, X, UserCircle, LayoutDashboard, Settings, LogOut, ChevronDown } from 'lucide-react';
+import { Search, Menu as MenuIcon, X, LayoutDashboard, Settings, LogOut, ChevronDown } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
 const logoSrc = "/logo.png";
 const IMG_URL = "https://api.microskill.com.bd";
 
-// ✅ Helper — image src সঠিকভাবে বানাও
+// ✅ Helper — ইমেজ URL ঠিক করার ফাংশন
 const getImageSrc = (image) => {
     if (!image) return null;
-    if (image.startsWith('http://') || image.startsWith('https://')) return image; // Google image
-    if (image.startsWith('/')) return `${IMG_URL}${image}`; // /uploads/avatars/...
-    return `${IMG_URL}/${image}`; // uploads/avatars/... (without leading slash)
+    if (image.startsWith('http://') || image.startsWith('https://')) return image; 
+    if (image.startsWith('/')) return `${IMG_URL}${image}`; 
+    return `${IMG_URL}/${image}`; 
 };
 
 const Navbar = () => {
@@ -49,50 +49,50 @@ const Navbar = () => {
         };
     }, []);
 
+    // ✅ AuthSection: যেখানে প্রোফাইল পিকচার এবং লগইন লজিক থাকে
     const AuthSection = ({ isMobile = false }) => {
         if (loading) {
             return <div className={`h-10 w-44 rounded-lg bg-gray-200 animate-pulse ${isMobile ? 'w-full' : ''}`}></div>;
         }
 
         if (user) {
-            const imageSrc = getImageSrc(user.image); // ✅ সঠিক URL
+            const imageSrc = getImageSrc(user.image);
+            // নাম থাকলে প্রথম অক্ষর নেবে, না থাকলে 'U'
+            const userInitial = user.name ? user.name.trim().charAt(0).toUpperCase() : 'U';
 
             return (
                 <div className="relative" ref={dropdownRef}>
                     <button
                         onClick={() => setIsDropdownOpen(prev => !prev)}
-                        className="flex items-center gap-2 rounded-full p-[3px] text-sm font-medium focus:outline-none bg-gradient-to-tr from-[#f97316] via-pink-500 to-purple-500 animate-spin-slow"
+                        className="flex items-center justify-center rounded-full focus:outline-none border-2 border-gray-200 hover:border-[#f97316] transition-all overflow-hidden h-10 w-10 bg-white"
                     >
                         <span className="sr-only">Open user menu</span>
 
-                        {/* ✅ Image অথবা Fallback */}
-                       {imageSrc ? (
-    <div className="bg-white rounded-full p-[2px]">
-        <img
-            src={imageSrc}
-            alt={user.name || 'User'}
-            width={38}
-            height={38}
-            className="h-9 w-9 rounded-full object-cover"
-            onError={(e) => { e.target.style.display = 'none'; }}
-        />
-    </div>
-) : (
-    <div className="bg-white rounded-full p-[2px]">
-        <div className="h-9 w-9 rounded-full bg-orange-100 flex items-center justify-center">
-            <span className="text-[#f97316] font-bold text-base">
-                {user.name?.[0]?.toUpperCase() || 'U'}
-            </span>
-        </div>
-    </div>
-)}
+                        {imageSrc ? (
+                            <img
+                                src={imageSrc}
+                                alt={user.name || 'User'}
+                                className="h-full w-full object-cover"
+                                onError={(e) => {
+                                    e.target.style.display = 'none';
+                                    e.target.nextSibling.style.display = 'flex';
+                                }}
+                            />
+                        ) : null}
 
-                    
+                        {/* ইমেজ না থাকলে বা এরর হলে এই Initial লেটারটি দেখাবে */}
+                        <div 
+                            className={`${imageSrc ? 'hidden' : 'flex'} h-full w-full bg-orange-100 items-center justify-center`}
+                            style={!imageSrc ? { display: 'flex' } : {}}
+                        >
+                            <span className="text-[#f97316] font-bold text-lg">
+                                {userInitial}
+                            </span>
+                        </div>
                     </button>
 
                     {isDropdownOpen && (
                         <div className="absolute right-0 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
-                            {/* User info */}
                             <div className="px-3 py-3 border-b border-gray-100">
                                 <p className="text-sm font-semibold text-gray-800 truncate">{user.name}</p>
                                 <p className="text-xs text-gray-500 truncate">{user.email}</p>
@@ -128,7 +128,6 @@ const Navbar = () => {
             );
         }
 
-        // Logged-out view
         return (
             <div className={`flex items-center gap-4 ${isMobile ? 'flex-col w-full' : ''}`}>
                 <Link
@@ -153,7 +152,7 @@ const Navbar = () => {
         <nav className="bg-white sticky top-0 z-50 w-full shadow-sm">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between h-20">
-
+                    
                     {/* Logo */}
                     <div className="flex items-center">
                         <Link href="/" className="flex-shrink-0 flex items-center">
@@ -208,9 +207,8 @@ const Navbar = () => {
 
             {/* Mobile Menu */}
             {isMenuOpen && (
-                <div className="md:hidden bg-white py-4 absolute w-full shadow-lg">
+                <div className="md:hidden bg-white py-4 absolute w-full shadow-lg border-t">
                     <div className="px-4 space-y-4">
-
                         {/* Mobile Search */}
                         <div className="relative w-full">
                             <span className="absolute left-4 top-1/2 -translate-y-1/2">
@@ -223,11 +221,9 @@ const Navbar = () => {
                             />
                             <button className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center gap-1.5 px-3 py-2 bg-orange-50 text-[#f97316] rounded-md text-sm font-semibold hover:bg-orange-100">
                                 অন্বেষণ করো
-                                <ChevronDown className="h-4 w-4" />
                             </button>
                         </div>
 
-                        {/* Mobile Nav Links */}
                         {navLinks.map((link) => (
                             <Link
                                 key={link.href}
@@ -239,8 +235,7 @@ const Navbar = () => {
                             </Link>
                         ))}
 
-                        {/* Mobile Auth */}
-                        <div className="border-t border-gray-200 pt-4 space-y-3">
+                        <div className="border-t border-gray-200 pt-4">
                             <AuthSection isMobile={true} />
                         </div>
                     </div>
