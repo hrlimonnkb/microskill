@@ -17,7 +17,7 @@ const GoogleIcon = () => (
     </svg>
 );
 
-const loginPage = () => {
+const LoginPage = () => {
     const router = useRouter();
     const searchParams = useSearchParams(); // ✅ redirect param ধরার জন্য
     const redirectTo = searchParams.get('redirect'); // ✅ e.g. /checkout/meta-ads-course
@@ -235,4 +235,4 @@ const loginPage = () => {
     );
 };
 
-export default loginPage;
+export default LoginPage;
