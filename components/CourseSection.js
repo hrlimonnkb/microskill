@@ -14,7 +14,7 @@ import 'swiper/css';
 import 'swiper/css/pagination';
 
 // API Base URL
-const API_BASE_URL = 'https://api.microskill.com.bd' || 'http://localhost:5000';
+const API_BASE_URL = 'http://localhost:8006' || 'http://localhost:5000';
 
 /**
  * Helper function to get full image URL
@@ -96,7 +96,7 @@ const PopularClassCard = ({ course }) => {
         
         {/* Free Badge */}
         {course.isFree && (
-          <div className="absolute top-4 left-4 bg-green-500 text-white text-xs font-semibold px-3 py-1.5 rounded-full">
+          <div className="absolute top-4 left-4 bg-[#f97316] text-white text-xs font-semibold px-3 py-1.5 rounded-full">
             ফ্রি
           </div>
         )}
@@ -155,7 +155,7 @@ const PopularClassCard = ({ course }) => {
           
           {/* Price */}
           {course.isFree ? (
-            <p className="text-2xl font-bold text-green-600">ফ্রি</p>
+            <p className="text-2xl font-bold text-[#f97316]">ফ্রি</p>
           ) : (
             <p className="text-2xl font-bold text-[#f97316]">
               ৳{course.price?.toLocaleString() || 0}

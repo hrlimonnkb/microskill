@@ -10,7 +10,7 @@ import {
 import { useAuth } from '@/context/AuthContext';
 import 'react-loading-skeleton/dist/skeleton.css';
 
-const API_BASE_URL = 'https://api.microskill.com.bd';
+const API_BASE_URL = 'http://localhost:8006';
 
 // ─── Design Tokens ─────────────────────────────────────────────────────────────
 const brand      = '#ea670c';

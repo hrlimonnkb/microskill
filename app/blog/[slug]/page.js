@@ -2,7 +2,7 @@ import BlogPostClient from '@/components/dashboard/Post/BlogPostClient';
 import { notFound } from 'next/navigation';
 
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.microskill.com.bd';
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8006';
 
 // ── Metadata ───────────────────────────────────────────────────
 export async function generateMetadata({ params }) {

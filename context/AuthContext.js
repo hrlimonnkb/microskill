@@ -36,7 +36,7 @@ export const AuthProvider = ({ children }) => {
         const { user, token } = loginData;
 
         if (!user || !token || !user.role) {
-            console.error("Login failed: Data must include user, token, and role.");
+            console.error("login failed: Data must include user, token, and role.");
             return;
         }
 
@@ -56,7 +56,7 @@ export const AuthProvider = ({ children }) => {
         setToken(null);
         localStorage.removeItem('user');
         localStorage.removeItem('authToken');
-        router.push('/signin');
+        router.push('/login');
     };
 
     const value = {

@@ -44,7 +44,7 @@ const ResetPasswordContent = () => {
         setLoading(true);
 
         try {
-            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.microskill.com.bd';
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8006';
             const response = await fetch(`${apiUrl}/api/auth/reset-password`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -63,7 +63,7 @@ const ResetPasswordContent = () => {
 
             setStatus({ type: 'success', message: 'সফলভাবে পাসওয়ার্ড পরিবর্তন হয়েছে! লগইন পেজে নেওয়া হচ্ছে...' });
             
-            setTimeout(() => router.push('/signin'), 2500);
+            setTimeout(() => router.push('/login'), 2500);
 
         } catch (error) {
             setStatus({ type: 'error', message: error.message });

@@ -22,7 +22,7 @@ export default function EditPostPage() {
           setIsLoading(true);
           const token = localStorage.getItem('authToken'); // Adjust if your auth token is stored differently 
             
-          const response = await fetch(`https://api.microskill.com.bd/api/post/id/${id}`, {
+          const response = await fetch(`http://localhost:8006/api/post/id/${id}`, {
             headers: {
               Authorization: `Bearer ${token}`
             }
@@ -44,7 +44,7 @@ export default function EditPostPage() {
     setIsSaving(true);
  const token = localStorage.getItem('authToken'); 
     // Using toast.promise handles loading, success, and error states automatically
-    const updatePromise = fetch(`https://api.microskill.com.bd/api/post/${id}`, {
+    const updatePromise = fetch(`http://localhost:8006/api/post/${id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -95,7 +95,7 @@ export default function EditPostPage() {
       {post && (
         <PostForm
           onSave={handleUpdatePost}
-          categoryApiEndpoint="https://api.microskill.com.bd/api/categories"
+          categoryApiEndpoint="http://localhost:8006/api/categories"
           redirectPath="/dashboard/blog"
           initialData={post}
           isSaving={isSaving}

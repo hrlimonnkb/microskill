@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { FiTrash2, FiEdit, FiImage, FiExternalLink, FiX } from 'react-icons/fi';
-const IMG_URL = "https://api.microskill.com.bd";
+const IMG_URL = "http://localhost:8006";
 
 const Modal = ({ isOpen, onClose, title, children }) => {
   if (!isOpen) return null;

@@ -10,7 +10,7 @@ import {
     Hash, Calendar, CreditCard, Building2, User, Shield
 } from 'lucide-react';
 
-const API_BASE_URL = 'https://api.microskill.com.bd';
+const API_BASE_URL = 'http://localhost:8006';
 
 const STATUS_CONFIG = {
     completed:  { label: 'সম্পন্ন',    bg: 'bg-green-100',  text: 'text-green-700',  icon: CheckCircle,  printClass: 'completed' },

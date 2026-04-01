@@ -6,7 +6,7 @@ import { Mail, Facebook, Youtube, Linkedin, BookOpen, CheckCircle, ArrowLeft, Ar
 import Link from 'next/link';
 import Skeleton from 'react-loading-skeleton';
 
-const API_BASE_URL = 'https://api.microskill.com.bd';
+const API_BASE_URL = 'http://localhost:8006';
 
 export default function TeacherProfileBySlug() {
     const { slug } = useParams();

@@ -7,7 +7,7 @@ import { Search, Menu as MenuIcon, X, LayoutDashboard, Settings, LogOut, Chevron
 import { useAuth } from '@/context/AuthContext';
 
 const logoSrc = "/logo.png";
-const IMG_URL = "https://api.microskill.com.bd";
+const IMG_URL = "http://localhost:8006";
 
 // ✅ Helper — ইমেজ URL ঠিক করার ফাংশন
 const getImageSrc = (image) => {
@@ -131,7 +131,7 @@ const Navbar = () => {
         return (
             <div className={`flex items-center gap-4 ${isMobile ? 'flex-col w-full' : ''}`}>
                 <Link
-                    href="/signin"
+                    href="/login"
                     className="px-3 py-2 text-base font-medium text-gray-700 hover:text-[#f97316]"
                     onClick={() => isMobile && setIsMenuOpen(false)}
                 >

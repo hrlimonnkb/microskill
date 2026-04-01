@@ -40,7 +40,7 @@ export default function NewPostPage() {
     try {
       setIsSaving(true);
       const token = localStorage.getItem('authToken'); // Adjust if your auth token is stored differently
-      const response = await fetch('https://api.microskill.com.bd/api/post', {
+      const response = await fetch('http://localhost:8006/api/post', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -74,7 +74,7 @@ export default function NewPostPage() {
       <PageHeading title="Add Post" breadcrumbs={breadcrumbs} />
       <PostForm
         onSave={handleSavePost}
-        categoryApiEndpoint="https://api.microskill.com.bd/api/categories"
+        categoryApiEndpoint="http://localhost:8006/api/categories"
         redirectPath="/dashboard/blog-posts"
         isSaving={isSaving}
       />

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.microskill.com.bd";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8006";
 
 // ─── SVG Wave Decorations ─────────────────────────────────────
 const TopLeftWave = () => (

@@ -8,7 +8,7 @@ import {
     PlayCircle, ChevronLeft, FileText, Bookmark, Menu, X, CheckCircle, Plus, Trash2
 } from 'lucide-react';
 
-const API_BASE_URL = 'https://api.microskill.com.bd';
+const API_BASE_URL = 'http://localhost:8006';
 
 export default function CoursePlayerPage() {
     const { slug } = useParams();

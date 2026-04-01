@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { CheckCircle, User, MapPin, CreditCard, Tag, ChevronRight } from 'lucide-react';
 
-const API_BASE_URL = 'https://api.microskill.com.bd';
+const API_BASE_URL = 'http://localhost:8006';
 
 const STEPS = [
     { id: 1, label: 'অর্ডার কনফার্মেশন', icon: CheckCircle },

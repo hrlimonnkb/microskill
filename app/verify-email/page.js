@@ -70,7 +70,7 @@ const VerifyEmailContent = () => {
 
         setLoading(true);
         try {
-            const response = await fetch('https://api.microskill.com.bd/api/auth/verify-email', {
+            const response = await fetch('http://localhost:8006/api/auth/verify-email', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, code: verificationCode }),
@@ -78,7 +78,7 @@ const VerifyEmailContent = () => {
             const data = await response.json();
             if (!response.ok) throw new Error(data.message);
             setSuccess('আপনার ইমেইল সফলভাবে যাচাই করা হয়েছে! আপনাকে লগইন পেজে নিয়ে যাওয়া হচ্ছে...');
-            setTimeout(() => router.push('/signin'), 3000);
+            setTimeout(() => router.push('/login'), 3000);
         } catch (err) {
             setError(err.message || 'একটি ত্রুটি ঘটেছে।');
         } finally {

@@ -5,7 +5,7 @@ import { ShieldAlert, Trash2, ChevronDown, UserX, Users, UserCircle2, Mail, Phon
 import { useAuth } from '@/context/AuthContext';
 import Image from 'next/image';
 
-const API_BASE_URL = 'https://api.microskill.com.bd';
+const API_BASE_URL = 'http://localhost:8006';
 const DEFAULT_ADMIN_EMAIL = 'sheblumicroters@gmail.com';
 
 // --- Helper Components ---
@@ -169,6 +169,7 @@ export default function UserManagementTable() {
     const [editingUser, setEditingUser] = useState(null);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
+
     useEffect(() => {
         const fetchUsers = async () => {
             if (!token) return;
@@ -181,7 +182,7 @@ export default function UserManagementTable() {
         };
         if (role === 'ADMIN') setTimeout(fetchUsers, 500); else if (!authLoading) setLoading(false);
     }, [role, token, authLoading]);
-
+console.log(users);
     const handleOpenCreateModal = () => setIsCreateModalOpen(true);
     const handleCloseCreateModal = () => setIsCreateModalOpen(false);
     const handleOpenEditModal = (user) => { setEditingUser(user); setIsEditModalOpen(true); };
@@ -272,15 +273,15 @@ export default function UserManagementTable() {
                                         <div className="flex items-center">
                                             <div className="flex-shrink-0 h-10 w-10">
                                                
-<Image 
+<img 
   className="h-10 w-10 rounded-full object-cover"  
-  width={40} 
-  height={40} 
-  // Add API_BASE_URL here and ensure a slash exists between them
-  src={u.image ? `${API_BASE_URL}/${u.image}` : `https://placehold.co/40x40/e2e8f0/64748b?text=${u.name ? u.name.charAt(0).toUpperCase() : '?'}`} 
-  alt={u.name || u.username} 
-/>
-                                            </div>
+  src={u.image 
+    ? (u.image.startsWith('http') ? u.image : `${API_BASE_URL}/${u.image.replace(/^\//, '')}`) 
+    : `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name || '?')}&size=40&background=e2e8f0&color=64748b`
+  } 
+  alt={u.name || u.username}
+  onError={(e) => { e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name || '?')}&size=40&background=e2e8f0&color=64748b`; }}
+/>                                       </div>
                                             <div className="ml-4">
                                                 <div className="text-sm font-semibold text-gray-900">{u.name || 'N/A'}</div>
                                                 <div className="text-sm text-gray-500">@{u.username}</div>

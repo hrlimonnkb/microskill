@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.microskill.com.bd';
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8006';
 
 function getAuthToken() {
     if (typeof window === 'undefined') return null;
@@ -124,7 +124,7 @@ export function PostDisplayList({
                     placeholder={`${contentName} খুঁজুন...`}
                     value={inputVal}
                     onChange={e => setInputVal(e.target.value)}
-                    className="w-full pl-11 pr-4 py-2.5 rounded-full border border-slate-200 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-700 placeholder-slate-400 text-sm transition"
+                    className="w-full pl-11 pr-4 py-2.5 rounded-full border border-slate-200 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-[#f97316] text-slate-700 placeholder-slate-400 text-sm transition"
                 />
             </div>
 
@@ -135,8 +135,8 @@ export function PostDisplayList({
                         onClick={() => handleCategory('')}
                         className={`px-4 py-1.5 rounded-full text-sm font-semibold border transition-all duration-200 ${
                             selectedCat === ''
-                                ? 'bg-emerald-500 text-white border-emerald-500 shadow-sm'
-                                : 'bg-white text-slate-600 border-slate-200 hover:border-emerald-400 hover:text-emerald-600'
+                                ? 'bg-[#f97316] text-white border-[#f97316] shadow-sm'
+                                : 'bg-white text-slate-600 border-slate-200 hover:border-[#f97316] hover:text-[#f97316]'
                         }`}
                     >
                         সব
@@ -147,8 +147,8 @@ export function PostDisplayList({
                             onClick={() => handleCategory(cat.slug)}
                             className={`px-4 py-1.5 rounded-full text-sm font-semibold border transition-all duration-200 ${
                                 selectedCat === cat.slug
-                                    ? 'bg-emerald-500 text-white border-emerald-500 shadow-sm'
-                                    : 'bg-white text-slate-600 border-slate-200 hover:border-emerald-400 hover:text-emerald-600'
+                                    ? 'bg-[#f97316] text-white border-[#f97316] shadow-sm'
+                                    : 'bg-white text-slate-600 border-slate-200 hover:border-[#f97316] hover:text-[#f97316]'
                             }`}
                         >
                             {cat.name}
@@ -223,12 +223,12 @@ function FeaturedCard({ post, linkPrefix }) {
                 {/* Content */}
                 <div className="flex flex-col justify-center p-6 sm:p-8 flex-1">
                     {post.category && (
-                        <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-600 uppercase tracking-wide mb-3">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block"></span>
+                        <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#f97316] uppercase tracking-wide mb-3">
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#f97316] inline-block"></span>
                             {post.category.name}
                         </span>
                     )}
-                    <h2 className="text-xl sm:text-2xl font-bold text-slate-800 group-hover:text-emerald-600 transition-colors leading-snug mb-3 line-clamp-3">
+                    <h2 className="text-xl sm:text-2xl font-bold text-slate-800 group-hover:text-[#f97316] transition-colors leading-snug mb-3 line-clamp-3">
                         {post.title}
                     </h2>
                     {post.excerpt && (
@@ -273,7 +273,7 @@ function BlogCard({ post, linkPrefix }) {
                         </div>
                     )}
                     {post.category && (
-                        <span className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-emerald-600 text-[10px] font-bold px-2.5 py-1 rounded-full border border-emerald-100 shadow-sm">
+                        <span className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-[#f97316] text-[10px] font-bold px-2.5 py-1 rounded-full border border-emerald-100 shadow-sm">
                             {post.category.name}
                         </span>
                     )}
@@ -281,7 +281,7 @@ function BlogCard({ post, linkPrefix }) {
 
                 {/* Body */}
                 <div className="p-4 flex flex-col flex-1">
-                    <h3 className="text-sm font-bold text-slate-800 group-hover:text-emerald-600 transition-colors line-clamp-2 mb-2 leading-snug">
+                    <h3 className="text-sm font-bold text-slate-800 group-hover:text-[#f97316] transition-colors line-clamp-2 mb-2 leading-snug">
                         {post.title}
                     </h3>
                     {post.excerpt && (
@@ -323,7 +323,7 @@ function AuthorAvatar({ author, size = 'sm' }) {
             {avatarSrc ? (
                 <img src={avatarSrc} alt={author?.name} className="w-full h-full object-cover" />
             ) : (
-                <span className="font-bold text-emerald-600">{initials}</span>
+                <span className="font-bold text-[#f97316]">{initials}</span>
             )}
         </div>
     );
@@ -354,7 +354,7 @@ function Pagination({ page, totalPages, onPageChange }) {
                     onClick={() => onPageChange(p)}
                     className={`w-9 h-9 rounded-full border text-sm font-medium transition ${
                         p === page
-                            ? 'bg-emerald-500 text-white border-emerald-500 shadow-sm'
+                            ? 'bg-[#f97316] text-white border-[#f97316] shadow-sm'
                             : 'border-slate-200 text-slate-600 hover:bg-slate-50'
                     }`}
                 >{p}</button>
@@ -412,7 +412,7 @@ function EmptyState({ onClear, contentName = 'posts' }) {
             <div className="text-5xl mb-4">🔎</div>
             <p className="text-lg font-medium">কোনো {contentName} পাওয়া যায়নি</p>
             {onClear && (
-                <button onClick={onClear} className="mt-3 text-emerald-500 underline text-sm">
+                <button onClick={onClear} className="mt-3 text-[#f97316] underline text-sm">
                     ফিল্টার সরান
                 </button>
             )}

@@ -7,7 +7,7 @@ import Skeleton, { SkeletonTheme } from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 import DynamicPageHeader from '@/components/DynamicPageHeader';
 
-const API_BASE_URL = 'https://api.microskill.com.bd';
+const API_BASE_URL = 'http://localhost:8006';
 
 const TeacherCardSkeleton = () => (
     <div className="bg-white rounded-lg shadow-sm overflow-hidden border border-slate-200 p-4 flex flex-col items-center text-center">

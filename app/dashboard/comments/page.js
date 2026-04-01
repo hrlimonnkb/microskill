@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.microskill.com.bd';
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8006';
 
 function getAuthToken() {
     if (typeof window === 'undefined') return null;

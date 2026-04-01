@@ -7,7 +7,7 @@ import Skeleton, { SkeletonTheme } from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 import { useAuth } from '@/context/AuthContext';
 
-const API_BASE_URL = 'https://api.microskill.com.bd';
+const API_BASE_URL = 'http://localhost:8006';
 
 // ---------- Reusable Components (No changes needed) ----------
 const FormSection = ({ title, icon, children }) => (
@@ -268,7 +268,7 @@ export default function TeacherRegistrationForm() {
     }
 
     if (!isAuthenticated) {
-        return <div className="flex flex-col justify-center items-center text-center bg-slate-50 h-screen"><ShieldCheck className="h-16 w-16 text-red-500 mb-4" /><h1 className="text-2xl font-bold text-slate-800">অ্যাক্সেস অনুমোদিত নয়</h1><p className="mt-2 text-slate-600">এই পেজটি দেখার জন্য আপনাকে প্রথমে লগইন করতে হবে।</p><button onClick={() => router.push('/signin')} className="mt-6 bg-[#ea670c] text-white font-bold py-2 px-6 rounded-md hover:bg-[#c2570c]">লগইন করুন</button></div>;
+        return <div className="flex flex-col justify-center items-center text-center bg-slate-50 h-screen"><ShieldCheck className="h-16 w-16 text-red-500 mb-4" /><h1 className="text-2xl font-bold text-slate-800">অ্যাক্সেস অনুমোদিত নয়</h1><p className="mt-2 text-slate-600">এই পেজটি দেখার জন্য আপনাকে প্রথমে লগইন করতে হবে।</p><button onClick={() => router.push('/login')} className="mt-6 bg-[#ea670c] text-white font-bold py-2 px-6 rounded-md hover:bg-[#c2570c]">লগইন করুন</button></div>;
     }
 
     return (

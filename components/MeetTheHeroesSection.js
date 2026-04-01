@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { Twitter, Linkedin } from 'lucide-react';
 
 // API Base URL
-const API_BASE_URL = 'https://api.microskill.com.bd' || 'https://api.microskill.com.bd';
+const API_BASE_URL = 'http://localhost:8006' || 'http://localhost:8006';
 
 /**
  * Helper function to get full image URL

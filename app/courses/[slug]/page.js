@@ -17,7 +17,7 @@ const iframeStyles = {
     border: 'none',
     backgroundColor: 'black'
 };
-const API_BASE_URL = 'https://api.microskill.com.bd';
+const API_BASE_URL = 'http://localhost:8006';
 
 const Skeleton = ({ className }) => <div className={`bg-gray-200 rounded-md animate-pulse ${className}`} />;
 

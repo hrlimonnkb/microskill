@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { User, Lock, Mail, Phone, AtSign, Camera, Save, Eye, EyeOff, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 
-const API_BASE_URL = 'https://api.microskill.com.bd';
+const API_BASE_URL = 'http://localhost:8006';
 const getImageSrc = (image) => {
     if (!image) return null;
     if (image.startsWith('http://') || image.startsWith('https://')) return image;

@@ -118,7 +118,7 @@ const CertificateTemplate = ({ id="cert-tpl", scale=1, studentName, courseTitle,
 };
 
 // ── Helpers ────────────────────────────────────────────────────
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.microskill.com.bd";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8006";
 function fmtDate(d) {
   if (!d) return "—";
   return new Date(d).toLocaleDateString("en-US", { year:"numeric", month:"short", day:"numeric" });

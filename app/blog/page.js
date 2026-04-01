@@ -7,7 +7,7 @@ export const metadata = {
 };
 
 const ITEMS_PER_PAGE = 7; // 1 featured + 6 grid
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.microskill.com.bd';
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8006';
 
 async function getInitialData() {
     const [postsRes, categoriesRes, popularRes] = await Promise.all([
@@ -38,8 +38,8 @@ export default async function BlogPage() {
             <div className="bg-white border-b border-slate-100">
                 <div className="max-w-5xl mx-auto px-5 py-12 text-center">
                     {/* Brand badge */}
-                    <div className="inline-flex items-center gap-2 bg-emerald-50 text-emerald-600 text-xs font-semibold px-4 py-1.5 rounded-full border border-emerald-100 mb-5">
-                        <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
+                    <div className="inline-flex items-center gap-2 bg-[#f97316] text-white text-xs font-semibold px-4 py-1.5 rounded-full border border-[#f97316] mb-5">
+                       
                         Micro Skill Blog
                     </div>
 
@@ -74,7 +74,7 @@ export default async function BlogPage() {
                         <aside className="xl:col-span-1 space-y-6">
                             <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 sticky top-6">
                                 <h2 className="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
-                                    <span className="w-1 h-5 bg-emerald-500 rounded-full inline-block"></span>
+                                    <span className="w-1 h-5 bg-[#f97316] rounded-full inline-block"></span>
                                     জনপ্রিয় পোস্ট
                                 </h2>
                                 <div className="space-y-4 divide-y divide-slate-100">

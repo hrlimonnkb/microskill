@@ -105,7 +105,7 @@ export function PostForm({ onSave, categoryApiEndpoint, redirectPath, initialDat
       fd.append('featuredImage', file);
 
      const token = localStorage.getItem('authToken'); // Adjust if your auth token is stored differently
-const res = await fetch('https://api.microskill.com.bd/api/post/upload-image', {
+const res = await fetch('http://localhost:8006/api/post/upload-image', {
   method: 'POST',
   headers: { Authorization: `Bearer ${token}` },
   body: fd,
@@ -135,7 +135,7 @@ const res = await fetch('https://api.microskill.com.bd/api/post/upload-image', {
     fd.append('featuredImage', blobInfo.blob(), blobInfo.filename() || 'image.png');
 
  const token = localStorage.getItem('authToken'); // Adjust if your auth token is stored differently
-const res = await fetch('https://api.microskill.com.bd/api/post/upload-image', {
+const res = await fetch('http://localhost:8006/api/post/upload-image', {
   method: 'POST',
   headers: { Authorization: `Bearer ${token}` },
   body: fd,
@@ -346,7 +346,7 @@ const res = await fetch('https://api.microskill.com.bd/api/post/upload-image', {
     src={
       imagePreview.startsWith('data:') || imagePreview.startsWith('blob:')
         ? imagePreview 
-        : `https://api.microskill.com.bd${imagePreview.startsWith('/') ? '' : '/'}${imagePreview}`
+        : `http://localhost:8006${imagePreview.startsWith('/') ? '' : '/'}${imagePreview}`
     }
     alt="Featured"
     className="w-full h-48 object-cover rounded-lg border border-slate-200"

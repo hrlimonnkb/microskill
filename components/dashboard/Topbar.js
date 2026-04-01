@@ -5,7 +5,7 @@ import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
 import { Search, Bell, Menu, LayoutDashboard, Settings, LogOut } from 'lucide-react';
 
-const IMG_URL = "https://api.microskill.com.bd";
+const IMG_URL = "http://localhost:8006";
 
 // ✅ Helper — সঠিক image URL বানাও
 const getImageSrc = (image) => {

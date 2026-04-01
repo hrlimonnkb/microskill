@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ShoppingBag, Home, BookOpen, BarChart2, Settings, X, Users, ChevronDown, User2, UserCircle, UserPen, Newspaper } from 'lucide-react';
+import { ShoppingBag, Home, BookOpen, BarChart2, Settings, X, Users, ChevronDown, User2, UserCircle, UserPen, Newspaper, Contact } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
 const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
@@ -88,11 +88,17 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
             roles: ['ADMIN'] 
         },
         { 
-            href: "/dashboard/analytics", 
-            icon: BarChart2, 
-            text: "অ্যানালিটিক্স",
+            href: "/dashboard/contact", 
+            icon: Contact, 
+            text: "যোগাযোগ বার্তা",
             roles: ['ADMIN'] 
         },
+        // { 
+        //     href: "/dashboard/analytics", 
+        //     icon: BarChart2, 
+        //     text: "অ্যানালিটিক্স",
+        //     roles: ['ADMIN'] 
+        // },
         { 
             href: "/dashboard/settings", 
             icon: Settings, 

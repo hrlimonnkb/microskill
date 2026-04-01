@@ -159,7 +159,7 @@ export default function BlogPostsPage() {
   const fetchPosts = useCallback(async (page, search) => {
     try {
       setIsLoading(true);
-      const response = await fetch(`https://api.microskill.com.bd/api/post?page=${page}&limit=${ITEMS_PER_PAGE}&search=${search}`);
+      const response = await fetch(`http://localhost:8006/api/post?page=${page}&limit=${ITEMS_PER_PAGE}&search=${search}`);
       if (!response.ok) throw new Error('Failed to fetch posts.');
       const data = await response.json();
 
@@ -186,7 +186,7 @@ setTotalPostsCount(data.pagination.total);
 
   const handleDeleteSelected = async (idsToDelete) => {
     try {
-      const response = await fetch('https://api.microskill.com.bd/api/post', {
+      const response = await fetch('http://localhost:8006/api/post', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ids: idsToDelete }),

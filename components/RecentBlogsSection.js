@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.microskill.com.bd';
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8006';
 
 function getImageSrc(image) {
     if (!image) return null;
@@ -18,15 +18,27 @@ function formatDate(dateStr) {
     });
 }
 
-const BlogTag = ({ label, color }) => {
+// ✅ Category slug দিয়ে link করা হয়েছে
+const BlogTag = ({ label, slug, color }) => {
     const colorClasses = {
-        pink:   'bg-pink-100 text-pink-600',
-        blue:   'bg-blue-100 text-blue-600',
-        orange: 'bg-orange-100 text-orange-600',
-        indigo: 'bg-indigo-100 text-[#ea670c]',
+        pink:   'bg-pink-100 text-pink-600 hover:bg-pink-200',
+        blue:   'bg-blue-100 text-blue-600 hover:bg-blue-200',
+        orange: 'bg-orange-100 text-[#f97316] hover:bg-orange-200',
+        indigo: 'bg-indigo-100 text-[#ea670c] hover:bg-indigo-200',
     };
+    const cls = colorClasses[color] || 'bg-gray-100 text-gray-600 hover:bg-gray-200';
+
+    if (slug) {
+        return (
+            <Link href={`/blog/category/${slug}`}>
+                <span className={`text-sm font-medium px-3 py-1 rounded-full transition-colors duration-200 ${cls}`}>
+                    {label}
+                </span>
+            </Link>
+        );
+    }
     return (
-        <span className={`text-sm font-medium px-3 py-1 rounded-full ${colorClasses[color] || 'bg-gray-100 text-gray-600'}`}>
+        <span className={`text-sm font-medium px-3 py-1 rounded-full ${cls}`}>
             {label}
         </span>
     );
@@ -64,7 +76,8 @@ const SmallBlogCard = ({ blog }) => {
                 <p className="text-gray-600 text-base mt-2 line-clamp-2">{blog.excerpt}</p>
                 {blog.category && (
                     <div className="flex flex-wrap gap-2 mt-4">
-                        <BlogTag label={blog.category.name} color="blue" />
+                        {/* ✅ slug পাঠানো হচ্ছে */}
+                        <BlogTag label={blog.category.name} slug={blog.category.slug} color="blue" />
                     </div>
                 )}
             </div>
@@ -104,7 +117,8 @@ const LargeBlogCard = ({ blog }) => {
                 <p className="text-gray-600 text-base mt-3 line-clamp-3">{blog.excerpt}</p>
                 {blog.category && (
                     <div className="flex flex-wrap gap-2 mt-4">
-                        <BlogTag label={blog.category.name} color="orange" />
+                        {/* ✅ slug পাঠানো হচ্ছে */}
+                        <BlogTag label={blog.category.name} slug={blog.category.slug} color="orange" />
                     </div>
                 )}
             </div>
@@ -141,18 +155,17 @@ const LargeCardSkeleton = () => (
 );
 
 const RecentBlogsSection = () => {
-    const [posts, setPosts]   = useState([]);
+    const [posts, setPosts]     = useState([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError]   = useState(null);
+    const [error, setError]     = useState(null);
 
     useEffect(() => {
         async function fetchPosts() {
             try {
-                const res  = await fetch(`${API_BASE}/api/post?limit=3&status=PUBLISHED&sort=createdAt:desc`);
+                // ✅ সঠিক endpoint — /api/blog/posts
+                const res  = await fetch(`${API_BASE}/api/post?limit=3&status=PUBLISHED`);
                 if (!res.ok) throw new Error('Failed to fetch posts');
                 const data = await res.json();
-                // Handle all common API response shapes:
-                // { posts: [] } | { content: [] } | { data: [] } | []
                 const list = data?.posts ?? data?.content ?? data?.data ?? (Array.isArray(data) ? data : []);
                 setPosts(Array.isArray(list) ? list : []);
             } catch (err) {
@@ -167,7 +180,7 @@ const RecentBlogsSection = () => {
     const smallPosts = posts.slice(0, 2);
     const largePost  = posts[2] || null;
 
-    if (error) return null; // silently fail on homepage section
+    if (error) return null;
 
     return (
         <section className="py-16 md:py-24 bg-white">

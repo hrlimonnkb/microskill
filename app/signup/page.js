@@ -1,7 +1,7 @@
 "use client";
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { signIn } from 'next-auth/react';
+import { login } from 'next-auth/react';
 import { CheckCircle, BookOpenText, Sparkles, Mail, Lock, User, AtSign, Smartphone, Eye, EyeOff, Loader2 } from 'lucide-react';
 
 const GoogleIcon = () => (
@@ -35,8 +35,8 @@ const SignupPage = () => {
         setFormData({ ...formData, [name]: value });
     };
 
-    const handleGoogleSignIn = async () => {
-        await signIn('google', { callbackUrl: '/dashboard' });
+    const handleGooglelogin = async () => {
+        await login('google', { callbackUrl: '/dashboard' });
     };
 
     const handleSubmit = async (e) => {
@@ -52,7 +52,7 @@ const SignupPage = () => {
         setLoading(true);
 
         try {
-            const response = await fetch('https://api.microskill.com.bd/api/auth/signup', {
+            const response = await fetch('http://localhost:8006/api/auth/signup', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -119,7 +119,7 @@ const SignupPage = () => {
                     <h2 style={{ color: '#111827' }} className="text-3xl font-bold mb-2">অ্যাকাউন্ট তৈরি করুন</h2>
                     <p style={{ color: '#6B7280' }} className="mb-6">ফর্মটি পূরণ করে আমাদের সাথে যুক্ত হোন।</p>
                     
-                    <button onClick={handleGoogleSignIn} className="w-full flex items-center justify-center py-2.5 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors" style={{ color: '#111827' }}>
+                    <button onClick={handleGooglelogin} className="w-full flex items-center justify-center py-2.5 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors" style={{ color: '#111827' }}>
                         <GoogleIcon />
                         গুগল দিয়ে সাইন আপ করুন
                     </button>
@@ -190,7 +190,7 @@ const SignupPage = () => {
 
                     <p style={{ color: '#6B7280' }} className="text-center text-sm mt-6">
                         ইতিমধ্যে অ্যাকাউন্ট আছে?{' '}
-                        <a href="/signin" style={{ color: '#fb8a3c' }} className="font-semibold hover:underline">
+                        <a href="/login" style={{ color: '#fb8a3c' }} className="font-semibold hover:underline">
                             লগইন করুন
                         </a>
                     </p>

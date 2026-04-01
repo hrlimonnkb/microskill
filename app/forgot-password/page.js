@@ -16,7 +16,7 @@ export default function ForgotPasswordPage() {
         setMessage({ type: '', text: '' });
 
         try {
-            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.microskill.com.bd';
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8006';
             const response = await fetch(`${apiUrl}/api/auth/request-password-reset`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -84,7 +84,7 @@ export default function ForgotPasswordPage() {
                 </form>
 
                 <div className="mt-6 text-center">
-                    <Link href="/signin" className="inline-flex items-center text-sm font-medium text-gray-600 hover:text-[#ea670c] transition-colors">
+                    <Link href="/login" className="inline-flex items-center text-sm font-medium text-gray-600 hover:text-[#ea670c] transition-colors">
                         <ArrowLeft className="h-4 w-4 mr-2" />
                         লগইন পেজে ফিরে যান
                     </Link>

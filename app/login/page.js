@@ -2,10 +2,10 @@
 
 import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation'; // ✅ useSearchParams যোগ
-import { useGoogleLogin } from '@react-oauth/google';
 import Head from 'next/head';
 import { CheckCircle, BookOpenText, Sparkles, Mail, Lock, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import { useGoogleLogin } from '@react-oauth/google';
 
 const GoogleIcon = () => (
     <svg className="h-5 w-5 mr-3" viewBox="0 0 24 24">
@@ -17,7 +17,7 @@ const GoogleIcon = () => (
     </svg>
 );
 
-const SigninPage = () => {
+const loginPage = () => {
     const router = useRouter();
     const searchParams = useSearchParams(); // ✅ redirect param ধরার জন্য
     const redirectTo = searchParams.get('redirect'); // ✅ e.g. /checkout/meta-ads-course
@@ -34,8 +34,8 @@ const SigninPage = () => {
         setFormData({ ...formData, [name]: value });
     };
 
-    // ✅ Login সফল হলে redirect করার helper
-    const handleLoginSuccess = (data) => {
+    // ✅ login সফল হলে redirect করার helper
+    const handleloginSuccess = (data) => {
         login(data); // AuthContext এ save করো
         if (redirectTo) {
             router.push(redirectTo); // checkout বা যেখান থেকে এসেছে সেখানে যাও
@@ -45,14 +45,14 @@ const SigninPage = () => {
     };
 
     // ==========================================
-    // Google Login
+    // Google login
     // ==========================================
-    const handleGoogleLogin = useGoogleLogin({
+    const handleGooglelogin = useGoogleLogin({
         onSuccess: async (tokenResponse) => {
             setLoading(true);
             setError('');
             try {
-                const response = await fetch('https://api.microskill.com.bd/api/auth/google-login', {
+                const response = await fetch('http://localhost:8006/api/auth/google-login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ token: tokenResponse.access_token }),
@@ -64,7 +64,7 @@ const SigninPage = () => {
                     throw new Error(data.message || 'Google login failed.');
                 }
 
-                handleLoginSuccess(data); // ✅ redirect সহ login
+                handleloginSuccess(data); // ✅ redirect সহ login
             } catch (err) {
                 console.error(err);
                 setError(err.message || 'Google Sign-in failed. Please try again.');
@@ -73,13 +73,13 @@ const SigninPage = () => {
             }
         },
         onError: (error) => {
-            console.error('Google Login Error:', error);
+            console.error('Google login Error:', error);
             setError('Google sign-in popup closed or failed.');
         }
     });
 
     // ==========================================
-    // Email/Password Login
+    // Email/Password login
     // ==========================================
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -93,7 +93,7 @@ const SigninPage = () => {
         setLoading(true);
 
         try {
-            const response = await fetch('https://api.microskill.com.bd/api/auth/signin', {
+            const response = await fetch('http://localhost:8006/api/auth/signin', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData),
@@ -102,10 +102,10 @@ const SigninPage = () => {
             const data = await response.json();
 
             if (!response.ok) {
-                throw new Error(data.message || 'Something went wrong during signin.');
+                throw new Error(data.message || 'Something went wrong during login.');
             }
 
-            handleLoginSuccess(data); // ✅ redirect সহ login
+            handleloginSuccess(data); // ✅ redirect সহ login
         } catch (err) {
             setError(err.message);
         } finally {
@@ -168,7 +168,7 @@ const SigninPage = () => {
 
                         {/* Google Button */}
                         <button
-                            onClick={() => handleGoogleLogin()}
+                            onClick={() => handleGooglelogin()}
                             disabled={loading}
                             className="w-full flex items-center justify-center py-2.5 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                             style={{ color: '#111827' }}
@@ -235,4 +235,4 @@ const SigninPage = () => {
     );
 };
 
-export default SigninPage;
+export default loginPage;

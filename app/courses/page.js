@@ -10,12 +10,12 @@ import Skeleton, { SkeletonTheme } from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 import DynamicPageHeader from '@/components/DynamicPageHeader';
 
-const API_BASE_URL = 'https://api.microskill.com.bd';
+const API_BASE_URL = 'http://localhost:8006';
 
 const CourseCardSkeleton = () => (
     <div className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden border border-slate-200">
         <Skeleton height={180} className="w-full object-cover" />
-        <div className="p-4">
+        <div className="p-4 flex flex-col flex-1">
             <Skeleton height={20} width="80%" className="mb-2" />
             <Skeleton height={16} width="60%" className="mb-3" />
             <Skeleton count={2} height={12} className="mb-3" />
@@ -110,14 +110,14 @@ export default function AllCoursesPage() {
                             ) : (
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                     {courses.map((course) => (
-                                        <div key={course.id} className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden border border-slate-200">
+                                        <div key={course.id} className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden border border-slate-200 flex flex-col">
                                             {console.log(course)}
                                             <img
                                                 className="w-full h-48 object-cover"
                                                 src={course.thumbnail ? `${API_BASE_URL}/${course.thumbnail}` : 'https://placehold.co/400x240/e2e8f0/64748b?text=Course'}
                                                 alt={course.title}
                                             />
-                                            <div className="p-4">
+                                          <div className="p-4 flex flex-col flex-1">
                                                 <h3 className="text-lg font-semibold text-slate-800 mb-1 leading-tight">{course.title}</h3>
                                                 <p className="text-sm text-slate-600 flex items-center mb-3">
                                                     <User size={14} className="mr-1 text-slate-400" />
@@ -146,11 +146,11 @@ export default function AllCoursesPage() {
                                                     )}
                                                 </div>
 
-                                                <p className="text-xl font-bold text-slate-900 mb-4">
+                                               <p className="text-xl font-bold text-slate-900 mb-4 mt-auto">
                                                     {course.isFree ? 'ফ্রি' : `৳ ${course.price}`}
                                                 </p>
 
-                                                <Link href={`/courses/${course.slug}`} passHref>
+                                                <Link href={`/courses/${course.slug}`} passHref >
                                                     <span className="w-full inline-flex items-center justify-center px-4 py-2 bg-[#f97316] text-white font-semibold rounded-md hover:bg-[#c2570c] transition-colors duration-200 text-center cursor-pointer">
                                                         কোর্সটি দেখুন
                                                         <ArrowRight size={18} className="ml-2" />

@@ -221,7 +221,8 @@ const HeroSection = () => {
             {/* আইটেম ১: Text */}
             <h3 className="text-base sm:text-lg md:text-xl font-semibold text-gray-800 shrink-0 z-10">
            <span className='text-[#f97316] text-2xl font-bold leading-tight'>২৫০+ </span>
-<h6>সহযোগি প্রতিষ্ঠানসমূহ</h6>
+           <br/>
+<span className='text-xl'>সহযোগি প্রতিষ্ঠানসমূহ</span>
 
             </h3>
 
