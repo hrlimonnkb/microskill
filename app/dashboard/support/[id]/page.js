@@ -258,7 +258,7 @@ export default function TicketDetailPage() {
                                     </div>
                                     <span className="text-xs text-amber-700 font-medium">{ticket.rating.rating}/5</span>
                                     {ticket.rating.comment && (
-                                        <span className="text-xs text-gray-500">— "{ticket.rating.comment}"</span>
+                                        <span className="text-xs text-gray-500">— {ticket.rating.comment}</span>
                                     )}
                                 </div>
                             )}
