@@ -151,7 +151,7 @@ export default function AdminTicketDetail() {
     }
 
     // ── Use canned response ─────────────────────────────────────
-    async function useCanned(r) {
+    async function applyCanned(r) {
         setReplyMsg(r.content);
         setShowCanned(false);
         // usageCount বাড়াও
@@ -304,7 +304,7 @@ export default function AdminTicketDetail() {
                                             {canned.map(r => (
                                                 <button
                                                     key={r.id}
-                                                    onClick={() => useCanned(r)}
+                                                    onClick={() => applyCanned(r)}
                                                     className="w-full text-left px-4 py-3 hover:bg-orange-50 transition border-b border-orange-50 last:border-0"
                                                 >
                                                     <div className="text-sm font-semibold text-gray-700">{r.title}</div>
