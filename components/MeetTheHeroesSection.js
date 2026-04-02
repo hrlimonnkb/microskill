@@ -116,12 +116,22 @@ const TutorCard = ({ tutor }) => {
 /**
  * The Main "Meet the Heroes" Section
  */
-const MeetTheHeroesSection = () => {
-  const [tutorsData, setTutorsData] = useState([]);
-  const [loading, setLoading] = useState(true);
+const MeetTheHeroesSection = ({ initialTutors }) => {
+  const [tutorsData, setTutorsData] = useState(initialTutors || []);
+  const [loading, setLoading] = useState(!initialTutors || initialTutors.length === 0);
   const [error, setError] = useState(null);
 
+  // SSR DEBUG - পরে মুছে দিও
+  console.log('👨‍🏫 MeetTheHeroesSection:', initialTutors ? `SSR data: ${initialTutors.length}টি tutor ✅` : 'SSR নেই, Client fetch হবে ⚠️');
+
   useEffect(() => {
+    // SSR থেকে data পাওয়া গেলে client fetch skip
+    if (initialTutors && initialTutors.length > 0) {
+      console.log('✅ SSR data use হচ্ছে, client fetch skip');
+      return;
+    }
+
+    console.log('⚠️ SSR data নেই, client-side fetch শুরু...');
     const fetchTeachers = async () => {
       try {
         setLoading(true);
@@ -135,7 +145,6 @@ const MeetTheHeroesSection = () => {
         
         const data = await response.json();
         
-        // Limit to 4 teachers for the homepage
         setTutorsData(data.slice(0, 4));
         
       } catch (err) {

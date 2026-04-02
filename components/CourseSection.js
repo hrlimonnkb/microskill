@@ -170,19 +170,27 @@ const PopularClassCard = ({ course }) => {
 /**
  * The Main Popular Class Section Component
  */
-const PopularClassSection = () => {
-  const [coursesData, setCoursesData] = useState([]);
-  const [loading, setLoading] = useState(true);
+const PopularClassSection = ({ initialCourses }) => {
+  const [coursesData, setCoursesData] = useState(initialCourses || []);
+  const [loading, setLoading] = useState(!initialCourses || initialCourses.length === 0);
   const [error, setError] = useState(null);
 
-  // Fetch courses from API
+  // SSR DEBUG - পরে মুছে দিও
+  console.log('📚 PopularClassSection:', initialCourses ? `SSR data: ${initialCourses.length}টি কোর্স ✅` : 'SSR নেই, Client fetch হবে ⚠️');
+
   useEffect(() => {
+    // SSR থেকে data পাওয়া গেলে client fetch skip
+    if (initialCourses && initialCourses.length > 0) {
+      console.log('✅ SSR data use হচ্ছে, client fetch skip');
+      return;
+    }
+
+    console.log('⚠️ SSR data নেই, client-side fetch শুরু...');
     const fetchPopularCourses = async () => {
       try {
         setLoading(true);
         setError(null);
         
-        // আপনার actual API endpoint
         const response = await fetch(`${API_BASE_URL}/api/courses`);
         
         if (!response.ok) {
@@ -192,8 +200,6 @@ const PopularClassSection = () => {
         const data = await response.json();
         console.log(data);
         
-        // যদি data array হয়, তাহলে সরাসরি use করুন
-        // যদি data.courses থাকে, তাহলে সেটা use করুন
         setCoursesData(Array.isArray(data) ? data : (data.courses || []));
         
       } catch (err) {

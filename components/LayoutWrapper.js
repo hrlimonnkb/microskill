@@ -1,22 +1,19 @@
-"use client"; // <-- এটি এখন ক্লায়েন্ট কম্পোনেন্ট
+"use client";
 
 import { usePathname } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { AuthProvider } from '@/context/AuthContext';
 
-// এই কম্পোনেন্টটি children prop হিসেবে নিবে
+
 export default function LayoutWrapper({ children }) {
   const pathname = usePathname();
   const isDashboardRoute = pathname.startsWith('/dashboard');
-  
-  // WhatsApp আইকনের লজিক
   const isAdminRoute = pathname.startsWith('/admin');
 
   return (
     <AuthProvider>
-      {/* WhatsApp Button */}
-      {/* শুধুমাত্র /admin রুট ছাড়া বাকি সব জায়গায় বাটনটি দেখাবে */}
+
       {!isAdminRoute && (
         <a
           href="https://wa.me/8801609101537?text=Hi!%20I%20need%20help%20From%20microskills."
@@ -34,15 +31,15 @@ export default function LayoutWrapper({ children }) {
           </svg>
         </a>
       )}
-      
-      {/* Navbar is only shown if it's NOT a dashboard route */}
+
+
       {!isDashboardRoute && <Navbar />}
-      
+
       <main>
-        {children} {/* পেজের কন্টেন্ট এখানে রেন্ডার হবে */}
+        {children}
       </main>
-      
-      {/* Footer is only shown if it's NOT a dashboard route */}
+
+
       {!isDashboardRoute && <Footer />}
     </AuthProvider>
   );

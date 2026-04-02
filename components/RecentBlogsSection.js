@@ -154,15 +154,24 @@ const LargeCardSkeleton = () => (
     </div>
 );
 
-const RecentBlogsSection = () => {
-    const [posts, setPosts]     = useState([]);
-    const [loading, setLoading] = useState(true);
+const RecentBlogsSection = ({ initialPosts }) => {
+    const [posts, setPosts]     = useState(initialPosts || []);
+    const [loading, setLoading] = useState(!initialPosts || initialPosts.length === 0);
     const [error, setError]     = useState(null);
 
+    // SSR DEBUG - পরে মুছে দিও
+    console.log('📰 RecentBlogsSection:', initialPosts ? `SSR data: ${initialPosts.length}টি post ✅` : 'SSR নেই, Client fetch হবে ⚠️');
+
     useEffect(() => {
+        // SSR থেকে data পাওয়া গেলে client fetch skip
+        if (initialPosts && initialPosts.length > 0) {
+            console.log('✅ SSR data use হচ্ছে, client fetch skip');
+            return;
+        }
+
+        console.log('⚠️ SSR data নেই, client-side fetch শুরু...');
         async function fetchPosts() {
             try {
-                // ✅ সঠিক endpoint — /api/blog/posts
                 const res  = await fetch(`${API_BASE}/api/post?limit=3&status=PUBLISHED`);
                 if (!res.ok) throw new Error('Failed to fetch posts');
                 const data = await res.json();

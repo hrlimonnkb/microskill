@@ -3,11 +3,10 @@
 import { Inter } from 'next/font/google';
 import './globals.css';
 import LayoutWrapper from '@/components/LayoutWrapper';
-import { Providers } from '@/components/Providers'; // <--- ১. এই লাইনটি নতুন যোগ করুন
+import { Providers } from '@/components/Providers'; 
 
 const inter = Inter({ subsets: ['latin'] });
 
-// --- মেটাডেটা (যেমন ছিল তেমনই থাকবে) ---
 export const metadata = {
   title: {
     default: 'Microskills',
@@ -43,13 +42,13 @@ export const metadata = {
     apple: '/apple-touch-icon.png',
   },
 };
-// --- মেটাডেটা শেষ ---
+
 
 export default function RootLayout({ children }) {
   return (
     <html lang="bn">
       <body className={inter.className}>
-        {/* ২. Providers দিয়ে সবকিছু মুড়িয়ে দিন */}
+       
         <Providers>
             <LayoutWrapper>
               {children}

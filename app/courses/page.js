@@ -1,61 +1,53 @@
 // ============================================
 // File 1: app/courses/page.jsx (All Courses)
 // ============================================
-"use client";
-
-import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { User, Clock, Users, ArrowRight, ChevronDown } from 'lucide-react';
-import Skeleton, { SkeletonTheme } from 'react-loading-skeleton';
-import 'react-loading-skeleton/dist/skeleton.css';
 import DynamicPageHeader from '@/components/DynamicPageHeader';
 
 const API_BASE_URL = 'http://localhost:8006';
 
-const CourseCardSkeleton = () => (
-    <div className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden border border-slate-200">
-        <Skeleton height={180} className="w-full object-cover" />
-        <div className="p-4 flex flex-col flex-1">
-            <Skeleton height={20} width="80%" className="mb-2" />
-            <Skeleton height={16} width="60%" className="mb-3" />
-            <Skeleton count={2} height={12} className="mb-3" />
-            <div className="flex items-center text-sm text-slate-500 mb-3 space-x-4">
-                <Skeleton width={80} />
-                <Skeleton width={80} />
-            </div>
-            <div className="flex items-center mb-4">
-                <Skeleton width={80} height={28} />
-            </div>
-            <Skeleton height={24} width="40%" className="mb-3" />
-            <Skeleton height={40} className="w-full" />
-        </div>
-    </div>
-);
+// const CourseCardSkeleton = () => (
+//     <div className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden border border-slate-200">
+//         <Skeleton height={180} className="w-full object-cover" />
+//         <div className="p-4 flex flex-col flex-1">
+//             <Skeleton height={20} width="80%" className="mb-2" />
+//             <Skeleton height={16} width="60%" className="mb-3" />
+//             <Skeleton count={2} height={12} className="mb-3" />
+//             <div className="flex items-center text-sm text-slate-500 mb-3 space-x-4">
+//                 <Skeleton width={80} />
+//                 <Skeleton width={80} />
+//             </div>
+//             <div className="flex items-center mb-4">
+//                 <Skeleton width={80} height={28} />
+//             </div>
+//             <Skeleton height={24} width="40%" className="mb-3" />
+//             <Skeleton height={40} className="w-full" />
+//         </div>
+//     </div>
+// );
 
-export default function AllCoursesPage() {
-    const [courses, setCourses] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+export default async function AllCoursesPage() {
+    // SSR DEBUG - পরে মুছে দিও
+    console.log('🖥️ AllCoursesPage SSR:', typeof window === 'undefined' ? 'Server ✅' : 'Client ❌');
 
-    useEffect(() => {
-        const fetchCourses = async () => {
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/courses`);
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.message || 'Failed to fetch courses.');
-                }
-                const data = await response.json();
-                setCourses(data);
-            } catch (err) {
-                setError(err.message);
-            } finally {
-                setLoading(false);
-            }
-        };
+    let courses = [];
+    let error = null;
 
-        fetchCourses();
-    }, []);
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/courses`, {
+            cache: 'no-store', // সবসময় fresh data
+        });
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Failed to fetch courses.');
+        }
+        courses = await response.json();
+        console.log(`✅ Server-এ ${courses.length}টি কোর্স fetch হয়েছে`);
+    } catch (err) {
+        error = err.message;
+        console.error('❌ Server fetch error:', err.message);
+    }
 
     const pageTitle = "আমাদের কোর্স সমূহ";
     const breadcrumbsList = [
@@ -68,7 +60,6 @@ export default function AllCoursesPage() {
     return (
         <main>
             <DynamicPageHeader title={pageTitle} breadcrumbs={breadcrumbsList} />
-            <SkeletonTheme baseColor="#e2e8f0" highlightColor="#f8fafc">
                 <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
                     <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-8">
                         
@@ -103,12 +94,7 @@ export default function AllCoursesPage() {
                                 <h1 className="text-2xl font-bold text-slate-800">সকল কোর্স</h1>
                             </div>
 
-                            {loading ? (
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                    {Array(6).fill(0).map((_, i) => <CourseCardSkeleton key={i} />)}
-                                </div>
-                            ) : (
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                     {courses.map((course) => (
                                         <div key={course.id} className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden border border-slate-200 flex flex-col">
                                             {console.log(course)}
@@ -160,11 +146,9 @@ export default function AllCoursesPage() {
                                         </div>
                                     ))}
                                 </div>
-                            )}
                         </main>
                     </div>
                 </div>
-            </SkeletonTheme>
         </main>
     );
 }
